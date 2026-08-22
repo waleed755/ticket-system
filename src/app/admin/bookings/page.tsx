@@ -27,12 +27,12 @@ export default async function AdminBookingsPage({
       ...(q
         ? {
             OR: [
-              { bookingNumber: { contains: q } },
-              { buyerName: { contains: q } },
-              { buyerEmail: { contains: q } },
-              { buyerPhone: { contains: q } },
-              { attendees: { some: { fullName: { contains: q } } } },
-              { tickets: { some: { ticketNumber: { contains: q } } } },
+              { bookingNumber: { contains: q, mode: "insensitive" } },
+              { buyerName: { contains: q, mode: "insensitive" } },
+              { buyerEmail: { contains: q, mode: "insensitive" } },
+              { buyerPhone: { contains: q, mode: "insensitive" } },
+              { attendees: { some: { fullName: { contains: q, mode: "insensitive" } } } },
+              { tickets: { some: { ticketNumber: { contains: q, mode: "insensitive" } } } },
             ],
           }
         : {}),

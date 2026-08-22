@@ -26,13 +26,13 @@ export async function listPublishedEvents(filters: EventFilters) {
 
   if (filters.q) {
     where.OR = [
-      { name: { contains: filters.q } },
-      { shortDescription: { contains: filters.q } },
-      { city: { contains: filters.q } },
+      { name: { contains: filters.q, mode: "insensitive" } },
+      { shortDescription: { contains: filters.q, mode: "insensitive" } },
+      { city: { contains: filters.q, mode: "insensitive" } },
     ];
   }
   if (filters.category) where.category = { slug: filters.category };
-  if (filters.city) where.city = { contains: filters.city };
+  if (filters.city) where.city = { contains: filters.city, mode: "insensitive" };
   if (filters.format) where.format = filters.format;
   if (filters.dateFrom || filters.dateTo) {
     where.startAt = {

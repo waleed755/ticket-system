@@ -53,9 +53,9 @@ export async function searchAttendeesAction(eventId: string, query: string) {
     where: {
       eventId,
       OR: [
-        { attendee: { fullName: { contains: query } } },
-        { booking: { bookingNumber: { contains: query } } },
-        { booking: { buyerName: { contains: query } } },
+        { attendee: { fullName: { contains: query, mode: "insensitive" } } },
+        { booking: { bookingNumber: { contains: query, mode: "insensitive" } } },
+        { booking: { buyerName: { contains: query, mode: "insensitive" } } },
       ],
     },
     include: { attendee: true, ticketCategory: true, booking: true },

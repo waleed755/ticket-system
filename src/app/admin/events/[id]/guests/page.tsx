@@ -19,11 +19,11 @@ export default async function GuestListPage({ params, searchParams }: { params: 
       ...(q
         ? {
             OR: [
-              { attendee: { fullName: { contains: q } } },
-              { ticketNumber: { contains: q } },
-              { booking: { bookingNumber: { contains: q } } },
-              { booking: { buyerName: { contains: q } } },
-              { booking: { buyerEmail: { contains: q } } },
+              { attendee: { fullName: { contains: q, mode: "insensitive" } } },
+              { ticketNumber: { contains: q, mode: "insensitive" } },
+              { booking: { bookingNumber: { contains: q, mode: "insensitive" } } },
+              { booking: { buyerName: { contains: q, mode: "insensitive" } } },
+              { booking: { buyerEmail: { contains: q, mode: "insensitive" } } },
             ],
           }
         : {}),
