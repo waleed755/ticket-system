@@ -62,6 +62,7 @@ export default function EventForm({
     organizerEmail: initial?.organizerEmail ?? "",
     organizerPhone: initial?.organizerPhone ?? "",
     organizerBio: initial?.organizerBio ?? "",
+    performerName: initial?.performerName ?? "",
     confirmationMessage: initial?.confirmationMessage ?? "",
     visibility: initial?.visibility ?? "PUBLIC",
     accessCode: initial?.accessCode ?? "",
@@ -111,6 +112,11 @@ export default function EventForm({
         <div>
           <Label>Event name</Label>
           <Input value={form.name} onChange={(e) => update("name", e.target.value)} required />
+        </div>
+        <div>
+          <Label>Featured performer / speaker / host (optional)</Label>
+          <Input value={form.performerName} onChange={(e) => update("performerName", e.target.value)} placeholder="e.g. the headlining artist or main speaker" />
+          <p className="text-xs text-gray-400 mt-1">Shown prominently on the event page alongside the date and time.</p>
         </div>
         <div>
           <Label>Short description</Label>

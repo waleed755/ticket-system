@@ -72,6 +72,7 @@ export default async function EditEventPage({ params }: { params: Promise<{ id: 
           accessibilityInfo: event.accessibilityInfo ?? "",
           organizerPhone: event.organizerPhone ?? "",
           organizerBio: event.organizerBio ?? "",
+          performerName: event.performerName ?? "",
           confirmationMessage: event.confirmationMessage ?? "",
           accessCode: event.accessCode ?? "",
         }}

@@ -54,6 +54,19 @@ export default async function EventDetailPage({
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold max-w-3xl">{event.name}</h1>
           <p className="mt-2 text-gray-200 max-w-2xl">{event.shortDescription}</p>
+
+          <div className="flex flex-wrap gap-3 mt-5">
+            <div className="flex items-center gap-2 bg-white text-gray-900 rounded-lg px-4 py-2.5 shadow-lg">
+              <span className="text-lg">📅</span>
+              <span className="font-bold text-sm sm:text-base">{formatEventDateTime(event.startAt, event.timezone)}</span>
+            </div>
+            {event.performerName && (
+              <div className="flex items-center gap-2 bg-brand text-white rounded-lg px-4 py-2.5 shadow-lg">
+                <span className="text-lg">🎤</span>
+                <span className="font-bold text-sm sm:text-base">{event.performerName}</span>
+              </div>
+            )}
+          </div>
         </Container>
       </div>
 
@@ -133,6 +146,13 @@ export default async function EventDetailPage({
               </div>
             )}
           </section>
+
+          {event.performerName && (
+            <section>
+              <h3 className="font-semibold text-gray-900 mb-2">Featuring</h3>
+              <p className="text-base text-gray-900 font-bold">{event.performerName}</p>
+            </section>
+          )}
 
           <section>
             <h3 className="font-semibold text-gray-900 mb-2">Organizer</h3>

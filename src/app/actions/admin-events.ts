@@ -56,6 +56,7 @@ export interface EventFormInput {
   organizerEmail: string;
   organizerPhone?: string;
   organizerBio?: string;
+  performerName?: string;
   confirmationMessage?: string;
   visibility: "PUBLIC" | "PRIVATE";
   accessCode?: string;
@@ -121,6 +122,7 @@ export async function createEventAction(input: EventFormInput) {
       organizerEmail: input.organizerEmail,
       organizerPhone: input.organizerPhone,
       organizerBio: input.organizerBio,
+      performerName: input.performerName,
       confirmationMessage: input.confirmationMessage,
       status: "DRAFT",
       visibility: input.visibility,
@@ -202,6 +204,7 @@ export async function updateEventAction(eventId: string, input: EventFormInput) 
         organizerEmail: input.organizerEmail,
         organizerPhone: input.organizerPhone,
         organizerBio: input.organizerBio,
+        performerName: input.performerName,
         confirmationMessage: input.confirmationMessage,
         visibility: input.visibility,
         accessCode: input.visibility === "PRIVATE" ? input.accessCode || generateAccessCode() : null,
@@ -453,6 +456,7 @@ export async function duplicateEventAction(eventId: string) {
       organizerEmail: original.organizerEmail,
       organizerPhone: original.organizerPhone,
       organizerBio: original.organizerBio,
+      performerName: original.performerName,
       status: "DRAFT",
       visibility: original.visibility,
       waitlistEnabled: original.waitlistEnabled,

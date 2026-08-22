@@ -259,6 +259,8 @@ model Event {
   organizerPhone      String?
   organizerBio        String?
 
+  performerName       String?
+
   status              EventStatus      @default(DRAFT)
   visibility          EventVisibility  @default(PUBLIC)
   accessCode          String?
