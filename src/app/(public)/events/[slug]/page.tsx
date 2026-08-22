@@ -9,6 +9,7 @@ import { formatEventDateTime, timezoneAbbr } from "@/lib/format";
 import { computeRefundDeadline, formatDeadline } from "@/lib/refund-policy";
 import { displayStatusLabels, displayStatusColor, isBookable } from "@/lib/event-status";
 import EventCard from "@/components/site/event-card";
+import GalleryLightbox from "@/components/site/gallery-lightbox";
 import AccessCodeForm from "./access-code-form";
 
 export const dynamic = "force-dynamic";
@@ -77,15 +78,7 @@ export default async function EventDetailPage({
             </Card>
           )}
 
-          {event.images.length > 0 && (
-            <div className="grid grid-cols-3 gap-3">
-              {event.images.map((img) => (
-                <div key={img.id} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
-                  <Image src={img.url} alt={img.altText ?? event.name} fill className="object-cover" />
-                </div>
-              ))}
-            </div>
-          )}
+          <GalleryLightbox images={event.images} eventName={event.name} />
 
           <section>
             <h2 className="text-xl font-bold text-gray-900 mb-3">About this event</h2>
