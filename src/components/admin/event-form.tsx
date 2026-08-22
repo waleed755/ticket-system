@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card, Button, Input, Label, Select, Textarea, Alert } from "@/components/ui";
 import { createEventAction, updateEventAction, type EventFormInput } from "@/app/actions/admin-events";
 import { formatMoney } from "@/lib/money";
+import { CoverImageUpload, GalleryUpload } from "@/components/admin/image-upload";
 
 interface Category {
   id: string;
@@ -71,7 +72,6 @@ export default function EventForm({
     questions: initial?.questions ?? [],
     ticketCategories: initial?.ticketCategories ?? [],
   });
-  const [imagesText, setImagesText] = useState((initial?.images ?? []).join("\n"));
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -81,8 +81,7 @@ export default function EventForm({
 
   function submit() {
     setError(null);
-    const images = imagesText.split("\n").map((s) => s.trim()).filter(Boolean);
-    const payload = { ...form, images };
+    const payload = { ...form };
     startTransition(async () => {
       if (eventId) {
         const result = await updateEventAction(eventId, payload);
@@ -138,12 +137,12 @@ export default function EventForm({
           </div>
         </div>
         <div>
-          <Label>Cover image URL</Label>
-          <Input value={form.coverImage} onChange={(e) => update("coverImage", e.target.value)} required />
+          <Label>Cover image (banner)</Label>
+          <CoverImageUpload value={form.coverImage} onChange={(url) => update("coverImage", url)} />
         </div>
         <div>
-          <Label>Gallery image URLs (one per line)</Label>
-          <Textarea rows={3} value={imagesText} onChange={(e) => setImagesText(e.target.value)} />
+          <Label>Gallery images</Label>
+          <GalleryUpload value={form.images} onChange={(images) => update("images", images)} />
         </div>
       </Card>
 
