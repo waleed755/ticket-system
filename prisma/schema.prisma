@@ -490,6 +490,7 @@ model Payment {
   cardLast4     String?
   cardBrand     String?
   failureReason String?
+  providerResponse String?
 
   attemptedAt   DateTime      @default(now())
   succeededAt   DateTime?

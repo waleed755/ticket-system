@@ -170,78 +170,23 @@ export type PaymentAttemptResult =
   | { success: true; bookingId: string }
   | { success: false; reason: string; alreadyConfirmed?: boolean };
 
-export async function confirmBookingPayment(params: {
-  bookingId: string;
-  card?: { cardNumber: string; expiry: string; cvc: string };
-}): Promise<PaymentAttemptResult> {
-  const booking = await prisma.booking.findUnique({
-    where: { id: params.bookingId },
+type BookingWithRelations = Awaited<ReturnType<typeof loadBookingForPayment>>;
+
+async function loadBookingForPayment(bookingId: string) {
+  return prisma.booking.findUnique({
+    where: { id: bookingId },
     include: { event: true, attendees: true },
   });
-  if (!booking) return { success: false, reason: "Booking not found." };
+}
 
-  if (booking.status === "CONFIRMED" || booking.status === "COMPLETED") {
-    return { success: true, bookingId: booking.id };
-  }
-  if (booking.status !== "PENDING_PAYMENT") {
-    return { success: false, reason: "This booking is no longer available for payment." };
-  }
-  if (booking.reservationExpiresAt && booking.reservationExpiresAt < new Date()) {
-    await prisma.booking.update({ where: { id: booking.id }, data: { status: "EXPIRED" } });
-    return { success: false, reason: "Your reserved tickets expired. Please start a new booking." };
-  }
-
+// Shared success path: generates tickets, updates inventory, creates/links the
+// customer account, and sends every confirmation email. Called by both the
+// simulated test-card flow and any real payment provider's callback (e.g.
+// JazzCash), so ticket issuance behaves identically no matter how the
+// customer paid.
+export async function finalizeConfirmedPayment(booking: NonNullable<BookingWithRelations>, payment: { reference: string }) {
   const isFree = booking.totalAmount === 0;
-  let chargeSuccess = true;
-  let reference = generatePaymentReference();
-  let cardLast4 = "";
-  let cardBrand = "";
-  let failureReason: string | undefined;
 
-  if (!isFree) {
-    if (!params.card) return { success: false, reason: "Payment details are required." };
-    const result = simulateCharge(params.card);
-    chargeSuccess = result.success;
-    reference = result.reference;
-    cardLast4 = result.cardLast4;
-    cardBrand = result.cardBrand;
-    failureReason = result.failureReason;
-  }
-
-  const payment = await prisma.payment.create({
-    data: {
-      bookingId: booking.id,
-      amount: booking.totalAmount,
-      currency: booking.currency,
-      status: chargeSuccess ? "SUCCEEDED" : "FAILED",
-      method: isFree ? "free" : "test_card",
-      reference,
-      cardLast4: cardLast4 || null,
-      cardBrand: cardBrand || null,
-      failureReason: failureReason,
-      succeededAt: chargeSuccess ? new Date() : null,
-    },
-  });
-
-  if (!chargeSuccess) {
-    await sendEmail({
-      toEmail: booking.buyerEmail,
-      subject: `Payment issue for ${booking.event.name}`,
-      bodyHtml: emailTemplates.paymentFailed({
-        buyerName: booking.buyerName,
-        eventName: booking.event.name,
-        retryUrl: `${process.env.APP_URL}/checkout/${booking.id}/pay`,
-        reason: failureReason || "Payment could not be processed.",
-      }),
-      previewText: "Your payment could not be processed",
-      category: "PAYMENT_FAILED",
-      relatedBookingId: booking.id,
-      relatedEventId: booking.eventId,
-    });
-    return { success: false, reason: failureReason || "Payment failed." };
-  }
-
-  // Success path: generate tickets, update inventory, create/link account, notify.
   await prisma.$transaction(async (tx) => {
     for (const attendee of booking.attendees) {
       await tx.ticket.create({
@@ -374,10 +319,90 @@ export async function confirmBookingPayment(params: {
     entityId: booking.id,
     description: `Booking ${booking.bookingNumber} confirmed for ${booking.event.name} (${booking.attendees.length} ticket(s)).`,
   });
+}
 
+// Shared failure path: records the failed payment and notifies the customer,
+// without touching inventory or generating tickets. The booking stays
+// PENDING_PAYMENT so the customer (or a re-submitted provider callback) can
+// retry within the reservation window.
+export async function sendPaymentFailedNotice(booking: NonNullable<BookingWithRelations>, failureReason: string) {
+  await sendEmail({
+    toEmail: booking.buyerEmail,
+    subject: `Payment issue for ${booking.event.name}`,
+    bodyHtml: emailTemplates.paymentFailed({
+      buyerName: booking.buyerName,
+      eventName: booking.event.name,
+      retryUrl: `${process.env.APP_URL}/checkout/${booking.id}/pay`,
+      reason: failureReason,
+    }),
+    previewText: "Your payment could not be processed",
+    category: "PAYMENT_FAILED",
+    relatedBookingId: booking.id,
+    relatedEventId: booking.eventId,
+  });
+}
+
+export async function confirmBookingPayment(params: {
+  bookingId: string;
+  card?: { cardNumber: string; expiry: string; cvc: string };
+}): Promise<PaymentAttemptResult> {
+  const booking = await loadBookingForPayment(params.bookingId);
+  if (!booking) return { success: false, reason: "Booking not found." };
+
+  if (booking.status === "CONFIRMED" || booking.status === "COMPLETED") {
+    return { success: true, bookingId: booking.id };
+  }
+  if (booking.status !== "PENDING_PAYMENT") {
+    return { success: false, reason: "This booking is no longer available for payment." };
+  }
+  if (booking.reservationExpiresAt && booking.reservationExpiresAt < new Date()) {
+    await prisma.booking.update({ where: { id: booking.id }, data: { status: "EXPIRED" } });
+    return { success: false, reason: "Your reserved tickets expired. Please start a new booking." };
+  }
+
+  const isFree = booking.totalAmount === 0;
+  let chargeSuccess = true;
+  let reference = generatePaymentReference();
+  let cardLast4 = "";
+  let cardBrand = "";
+  let failureReason: string | undefined;
+
+  if (!isFree) {
+    if (!params.card) return { success: false, reason: "Payment details are required." };
+    const result = simulateCharge(params.card);
+    chargeSuccess = result.success;
+    reference = result.reference;
+    cardLast4 = result.cardLast4;
+    cardBrand = result.cardBrand;
+    failureReason = result.failureReason;
+  }
+
+  const payment = await prisma.payment.create({
+    data: {
+      bookingId: booking.id,
+      amount: booking.totalAmount,
+      currency: booking.currency,
+      status: chargeSuccess ? "SUCCEEDED" : "FAILED",
+      method: isFree ? "free" : "test_card",
+      reference,
+      cardLast4: cardLast4 || null,
+      cardBrand: cardBrand || null,
+      failureReason: failureReason,
+      succeededAt: chargeSuccess ? new Date() : null,
+    },
+  });
+
+  if (!chargeSuccess) {
+    await sendPaymentFailedNotice(booking, failureReason || "Payment could not be processed.");
+    return { success: false, reason: failureReason || "Payment failed." };
+  }
+
+  await finalizeConfirmedPayment(booking, payment);
   return { success: true, bookingId: booking.id };
 }
 
 export async function refundSimulatedPayment(paymentReference: string, amount: number) {
   return simulateRefund(paymentReference, amount);
 }
+
+export { loadBookingForPayment };

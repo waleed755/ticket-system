@@ -33,3 +33,12 @@ export function generateToken(): string {
 export function generateAccessCode(): string {
   return customAlphabet("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", 8)();
 }
+
+// JazzCash pp_TxnRefNo: kept short and alphanumeric-only to stay well within
+// their field length limits, while still being sortable/traceable by time.
+export function generateJazzCashTxnRefNo(): string {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const stamp = `${d.getFullYear().toString().slice(2)}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+  return `T${stamp}${customAlphabet("0123456789ABCDEFGHJKLMNPQRSTUVWXYZ", 3)()}`;
+}
