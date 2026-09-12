@@ -57,7 +57,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="min-h-screen bg-gray-50 flex">
       <aside className="w-64 bg-gray-900 text-gray-300 flex-shrink-0 hidden md:flex md:flex-col">
         <div className="h-16 flex items-center px-5 font-bold text-white text-lg gap-2">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white text-sm">G</span>
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white text-sm">T</span>
           Admin
         </div>
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6">

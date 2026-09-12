@@ -19,7 +19,7 @@ async function drawTicket(doc: PDFDocument, ticket: TicketForPdf) {
 
   // Header band
   page.drawRectangle({ x: 0, y: PAGE_H - 60, width: PAGE_W, height: 60, color: rgb(0.31, 0.27, 0.9) });
-  page.drawText("GATHERLY", { x: 24, y: PAGE_H - 38, size: 16, font: bold, color: rgb(1, 1, 1) });
+  page.drawText("TICKETBUDDY.PK", { x: 24, y: PAGE_H - 38, size: 16, font: bold, color: rgb(1, 1, 1) });
   page.drawText(ticket.status === "CHECKED_IN" ? "CHECKED IN" : ticket.status, {
     x: PAGE_W - 150,
     y: PAGE_H - 38,
@@ -108,7 +108,7 @@ export async function generateReceiptPdf(bookingId: string): Promise<Uint8Array>
   const regular = await doc.embedFont(StandardFonts.Helvetica);
 
   let y = 740;
-  page.drawText("GATHERLY", { x: 48, y, size: 20, font: bold, color: rgb(0.31, 0.27, 0.9) });
+  page.drawText("TICKETBUDDY.PK", { x: 48, y, size: 20, font: bold, color: rgb(0.31, 0.27, 0.9) });
   y -= 18;
   page.drawText("Payment Receipt", { x: 48, y, size: 12, font: regular, color: rgb(0.4, 0.4, 0.45) });
 

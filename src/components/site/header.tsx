@@ -4,6 +4,7 @@ import { LinkButton } from "@/components/ui";
 
 const navLinks = [
   { href: "/events", label: "Browse Events" },
+  { href: "/how-it-works", label: "How It Works" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Support" },
 ];
@@ -15,8 +16,8 @@ export default async function Header() {
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-gray-200">
       <div className="container-page flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-2 font-bold text-lg text-gray-900">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white text-sm">G</span>
-          Gatherly
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white text-sm">T</span>
+          TicketBuddy.pk
         </Link>
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
           {navLinks.map((l) => (

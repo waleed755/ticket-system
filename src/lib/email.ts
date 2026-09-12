@@ -8,7 +8,7 @@ import type { EmailCategory } from "@prisma/client";
 // for a real provider call (Resend/SendGrid/SES) to go live — every call site
 // in the app stays the same.
 
-const APP_NAME = process.env.APP_NAME || "Gatherly";
+const APP_NAME = process.env.APP_NAME || "TicketBuddy.pk";
 const APP_URL = process.env.APP_URL || "http://localhost:3000";
 
 function layout(title: string, bodyHtml: string, previewText = ""): string {

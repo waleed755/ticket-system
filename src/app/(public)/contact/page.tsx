@@ -7,8 +7,10 @@ export default async function ContactPage() {
     prisma.page.findUnique({ where: { slug: "contact" } }),
     prisma.siteSetting.findMany(),
   ]);
-  const email = settings.find((s) => s.key === "support_email")?.value ?? "support@gatherly.events";
+  const email = settings.find((s) => s.key === "support_email")?.value ?? "tickets@ticketbuddy.pk";
   const phone = settings.find((s) => s.key === "support_phone")?.value ?? "";
+  const phoneAlt = settings.find((s) => s.key === "support_phone_alt")?.value ?? "";
+  const address = settings.find((s) => s.key === "business_address")?.value ?? "";
 
   return (
     <Container className="py-14">
@@ -25,7 +27,11 @@ export default async function ContactPage() {
           </Card>
           <Card className="p-6">
             <p className="font-semibold text-gray-900 mb-1">Phone</p>
-            <p className="text-sm text-gray-600">{phone}</p>
+            <p className="text-sm text-gray-600">{phone}{phoneAlt ? ` / ${phoneAlt}` : ""}</p>
+          </Card>
+          <Card className="p-6">
+            <p className="font-semibold text-gray-900 mb-1">Business address</p>
+            <p className="text-sm text-gray-600">{address}</p>
           </Card>
           <Card className="p-6">
             <p className="font-semibold text-gray-900 mb-1">Response time</p>

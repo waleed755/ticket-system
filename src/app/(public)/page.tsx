@@ -25,10 +25,10 @@ export default async function HomePage() {
         <Container className="relative py-20 sm:py-28">
           <p className="text-brand font-semibold mb-3 tracking-wide uppercase text-sm">Discover · Book · Attend</p>
           <h1 className="text-4xl sm:text-5xl font-extrabold max-w-2xl leading-tight">
-            Find your next unforgettable event
+            Pakistan&apos;s platform for concerts, conferences & live events
           </h1>
           <p className="mt-4 text-lg text-gray-300 max-w-xl">
-            Conferences, festivals, comedy nights, and more — book tickets in minutes, no account required.
+            Browse events, book tickets in minutes, and pay securely with JazzCash — no account required to get started.
           </p>
           <div className="mt-8 max-w-2xl">
             <SearchBar />
@@ -111,11 +111,12 @@ export default async function HomePage() {
       {/* Why us */}
       <div className="bg-white border-y border-gray-200 mt-16">
         <Container className="py-16">
-          <SectionHeading eyebrow="Why Gatherly" title="Booking made effortless" />
-          <div className="grid sm:grid-cols-3 gap-6">
+          <SectionHeading eyebrow="Why TicketBuddy.pk" title="Booking made effortless" />
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               { title: "No account required", body: "Book as a guest in minutes — we'll set up your account automatically after checkout." },
-              { title: "Secure, instant tickets", body: "Every attendee gets a unique, scannable ticket delivered by email the moment payment clears." },
+              { title: "Pay with JazzCash", body: "Checkout securely with your JazzCash wallet or linked card — we never store your payment details." },
+              { title: "Instant e-tickets", body: "Every attendee gets a unique, scannable ticket delivered by email the moment payment clears." },
               { title: "Fair refund policy", body: "Clear, consistent refund rules across every event — refundable up to 48 hours before the show." },
             ].map((f) => (
               <Card key={f.title} className="p-6">
@@ -134,7 +135,7 @@ export default async function HomePage() {
           {[
             { step: "1", title: "Find an event", body: "Search or browse by category, city, or date." },
             { step: "2", title: "Choose tickets", body: "Pick ticket types and enter attendee details." },
-            { step: "3", title: "Pay securely", body: "Complete checkout — free events skip this step." },
+            { step: "3", title: "Pay via JazzCash", body: "Pay securely with your JazzCash wallet or card — free events skip this step." },
             { step: "4", title: "Get your tickets", body: "Tickets arrive by email and in your dashboard instantly." },
           ].map((s) => (
             <div key={s.step}>

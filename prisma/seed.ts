@@ -51,25 +51,25 @@ async function main() {
   const password = await bcrypt.hash("Password123!", 10);
 
   const admin = await prisma.user.create({
-    data: { email: "admin@gatherly.events", passwordHash: password, role: "ADMIN", fullName: "Dana Whitfield", status: "ACTIVE" },
+    data: { email: "admin@ticketbuddy.pk", passwordHash: password, role: "ADMIN", fullName: "Dana Whitfield", status: "ACTIVE" },
   });
   const eventManager = await prisma.user.create({
-    data: { email: "sarah.manager@gatherly.events", passwordHash: password, role: "EVENT_MANAGER", fullName: "Sarah Kim", status: "ACTIVE" },
+    data: { email: "sarah.manager@ticketbuddy.pk", passwordHash: password, role: "EVENT_MANAGER", fullName: "Sarah Kim", status: "ACTIVE" },
   });
   const bookingManager = await prisma.user.create({
-    data: { email: "james.bookings@gatherly.events", passwordHash: password, role: "BOOKING_MANAGER", fullName: "James Ortiz", status: "ACTIVE" },
+    data: { email: "james.bookings@ticketbuddy.pk", passwordHash: password, role: "BOOKING_MANAGER", fullName: "James Ortiz", status: "ACTIVE" },
   });
   const financeManager = await prisma.user.create({
-    data: { email: "priya.finance@gatherly.events", passwordHash: password, role: "FINANCE_MANAGER", fullName: "Priya Nair", status: "ACTIVE" },
+    data: { email: "priya.finance@ticketbuddy.pk", passwordHash: password, role: "FINANCE_MANAGER", fullName: "Priya Nair", status: "ACTIVE" },
   });
   const support = await prisma.user.create({
-    data: { email: "tom.support@gatherly.events", passwordHash: password, role: "SUPPORT", fullName: "Tom Reilly", status: "ACTIVE" },
+    data: { email: "tom.support@ticketbuddy.pk", passwordHash: password, role: "SUPPORT", fullName: "Tom Reilly", status: "ACTIVE" },
   });
   const checkinStaff = await prisma.user.create({
-    data: { email: "mike.checkin@gatherly.events", passwordHash: password, role: "CHECKIN_STAFF", fullName: "Mike Chen", status: "ACTIVE" },
+    data: { email: "mike.checkin@ticketbuddy.pk", passwordHash: password, role: "CHECKIN_STAFF", fullName: "Mike Chen", status: "ACTIVE" },
   });
   const checkinStaff2 = await prisma.user.create({
-    data: { email: "lucia.checkin@gatherly.events", passwordHash: password, role: "CHECKIN_STAFF", fullName: "Lucia Fernandez", status: "ACTIVE" },
+    data: { email: "lucia.checkin@ticketbuddy.pk", passwordHash: password, role: "CHECKIN_STAFF", fullName: "Lucia Fernandez", status: "ACTIVE" },
   });
 
   // ---------------------------------------------------------------------
@@ -116,8 +116,8 @@ async function main() {
         "Attendees must be 18+. Badges are non-transferable once printed. Photography and recording will occur throughout the venue for promotional purposes.",
       ageRestriction: "18+",
       entryRequirements: "Government-issued photo ID required for badge pickup.",
-      organizerName: "Gatherly Inc.",
-      organizerEmail: "organizer@gatherly.events",
+      organizerName: "TicketBuddy.pk",
+      organizerEmail: "organizer@ticketbuddy.pk",
       organizerBio: "Producing premier technology conferences since 2015.",
       status: "PUBLISHED",
       visibility: "PUBLIC",
@@ -280,7 +280,7 @@ async function main() {
       categoryId: catWebinar.id,
       coverImage: "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=1200",
       format: "ONLINE",
-      onlineUrl: "https://meet.gatherly.events/future-of-remote-work",
+      onlineUrl: "https://meet.ticketbuddy.pk/future-of-remote-work",
       onlineInstructions: "Join link will be emailed 1 hour before the session and is also available in your account dashboard.",
       startAt: zonedDaysFromNow(9, 12, 0, "America/New_York"),
       endAt: zonedDaysFromNow(9, 13, 0, "America/New_York"),
@@ -291,8 +291,8 @@ async function main() {
       refundDeadlineHours: 48,
       refundPolicy: "This is a free event — no payment or refund applicable. You may cancel your registration any time from your dashboard.",
       termsAndConditions: "This session will be recorded. By registering you consent to being visible in the live chat/Q&A panel if you choose to participate.",
-      organizerName: "Gatherly Inc.",
-      organizerEmail: "webinars@gatherly.events",
+      organizerName: "TicketBuddy.pk",
+      organizerEmail: "webinars@ticketbuddy.pk",
       status: "PUBLISHED",
       visibility: "PUBLIC",
       featured: false,
@@ -323,7 +323,7 @@ async function main() {
       region: "CA",
       country: "USA",
       postalCode: "92109",
-      onlineUrl: "https://meet.gatherly.events/sunset-yoga",
+      onlineUrl: "https://meet.ticketbuddy.pk/sunset-yoga",
       startAt: zonedDaysFromNow(13, 17, 0, "America/Los_Angeles"),
       endAt: zonedDaysFromNow(13, 20, 0, "America/Los_Angeles"),
       timezone: "America/Los_Angeles",
@@ -408,8 +408,8 @@ async function main() {
       bookingEndAt: daysFromNow(69),
       refundPolicy: "Full refund up to 48 hours before the event.",
       termsAndConditions: "Details to be finalized.",
-      organizerName: "Gatherly Inc.",
-      organizerEmail: "organizer@gatherly.events",
+      organizerName: "TicketBuddy.pk",
+      organizerEmail: "organizer@ticketbuddy.pk",
       status: "DRAFT",
       visibility: "PUBLIC",
       createdById: eventManager.id,
@@ -761,9 +761,9 @@ async function main() {
     data: [
       {
         slug: "about",
-        title: "About Gatherly",
+        title: "About TicketBuddy.pk",
         content:
-          "Gatherly is a modern ticketing platform built for organizers who care about the details — from a smooth checkout to a check-in line that never backs up. Founded in 2021, we now power conferences, festivals, comedy nights, and community events for organizers across the country. Our mission is simple: make it effortless for people to discover events worth attending, and effortless for organizers to run them.",
+          "TicketBuddy.pk is a modern ticketing platform built for organizers who care about the details — from a smooth checkout to a check-in line that never backs up. Founded in 2021, we now power conferences, festivals, comedy nights, and community events for organizers across the country. Our mission is simple: make it effortless for people to discover events worth attending, and effortless for organizers to run them.",
       },
       {
         slug: "contact",
@@ -775,13 +775,13 @@ async function main() {
         slug: "refund-policy",
         title: "Refund & Cancellation Policy",
         content:
-          "Unless otherwise noted on a specific event page, tickets purchased through Gatherly may be refunded up until 48 hours before the event's scheduled start time. Refund requests submitted less than 48 hours before an event, after the event has started, or after the event has ended will not be accepted. Checked-in tickets are not eligible for refunds. If an event is cancelled or significantly rescheduled by its organizer, affected customers will be contacted directly with refund or credit options, which may fall outside the standard 48-hour window at the organizer's discretion.",
+          "Unless otherwise noted on a specific event page, tickets purchased through TicketBuddy.pk may be refunded up until 48 hours before the event's scheduled start time. Refund requests submitted less than 48 hours before an event, after the event has started, or after the event has ended will not be accepted. Checked-in tickets are not eligible for refunds. If an event is cancelled or significantly rescheduled by its organizer, affected customers will be contacted directly with refund or credit options, which may fall outside the standard 48-hour window at the organizer's discretion.",
       },
       {
         slug: "terms",
         title: "Terms and Conditions",
         content:
-          "By purchasing a ticket through Gatherly, you agree to the specific terms of the event you're attending (shown on each event page) as well as these general platform terms: tickets are issued to the named attendee and are not to be resold above face value; Gatherly acts as a ticketing platform on behalf of independent event organizers and is not itself the organizer of most listed events; entry to an event may be refused if a ticket is found to be fraudulent, duplicated, or in violation of an event's specific entry requirements.",
+          "By purchasing a ticket through TicketBuddy.pk, you agree to the specific terms of the event you're attending (shown on each event page) as well as these general platform terms: tickets are issued to the named attendee and are not to be resold above face value; TicketBuddy.pk acts as a ticketing platform on behalf of independent event organizers and is not itself the organizer of most listed events; entry to an event may be refused if a ticket is found to be fraudulent, duplicated, or in violation of an event's specific entry requirements.",
       },
       {
         slug: "privacy",
@@ -804,19 +804,19 @@ async function main() {
 
   await prisma.siteSetting.createMany({
     data: [
-      { key: "support_email", value: "support@gatherly.events" },
+      { key: "support_email", value: "support@ticketbuddy.pk" },
       { key: "support_phone", value: "+1 (800) 555-0123" },
     ],
   });
 
   console.log("Seed complete.");
   console.log("Staff logins (password: Password123!):");
-  console.log("  admin@gatherly.events (ADMIN)");
-  console.log("  sarah.manager@gatherly.events (EVENT_MANAGER)");
-  console.log("  james.bookings@gatherly.events (BOOKING_MANAGER)");
-  console.log("  priya.finance@gatherly.events (FINANCE_MANAGER)");
-  console.log("  tom.support@gatherly.events (SUPPORT)");
-  console.log("  mike.checkin@gatherly.events (CHECKIN_STAFF)");
+  console.log("  admin@ticketbuddy.pk (ADMIN)");
+  console.log("  sarah.manager@ticketbuddy.pk (EVENT_MANAGER)");
+  console.log("  james.bookings@ticketbuddy.pk (BOOKING_MANAGER)");
+  console.log("  priya.finance@ticketbuddy.pk (FINANCE_MANAGER)");
+  console.log("  tom.support@ticketbuddy.pk (SUPPORT)");
+  console.log("  mike.checkin@ticketbuddy.pk (CHECKIN_STAFF)");
   console.log("Customer logins (password: Password123!): hannah.brooks@example.com, marcus.lee@example.com, carlos.mendez@example.com, priya.desai@example.com, grace.kim@example.com");
 }
 

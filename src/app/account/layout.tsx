@@ -19,8 +19,8 @@ export default async function AccountLayout({ children }: { children: React.Reac
       <header className="bg-white border-b border-gray-200">
         <Container className="flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-bold text-lg text-gray-900">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white text-sm">G</span>
-            Gatherly
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white text-sm">T</span>
+            TicketBuddy.pk
           </Link>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-500">{session.fullName}</span>

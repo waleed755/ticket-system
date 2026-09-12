@@ -5,17 +5,17 @@ export default async function AboutPage() {
   const page = await prisma.page.findUnique({ where: { slug: "about" } });
   return (
     <Container className="py-14 max-w-3xl">
-      <SectionHeading eyebrow="Who we are" title={page?.title ?? "About Gatherly"} />
+      <SectionHeading eyebrow="Who we are" title={page?.title ?? "About TicketBuddy.pk"} />
       <div className="prose-body text-gray-700 whitespace-pre-line">{page?.content}</div>
       <div className="grid sm:grid-cols-3 gap-4 mt-10">
         {[
-          { stat: "2,500+", label: "Events hosted" },
-          { stat: "480K+", label: "Tickets sold" },
-          { stat: "98%", label: "On-time check-in rate" },
+          { title: "Secure JazzCash payments", body: "Every transaction is processed through JazzCash's hosted checkout." },
+          { title: "Instant digital tickets", body: "Unique, scannable tickets delivered by email the moment payment clears." },
+          { title: "PKR pricing", body: "All events, all ticket categories — priced clearly in Pakistani Rupees." },
         ].map((s) => (
-          <Card key={s.label} className="p-5 text-center">
-            <p className="text-2xl font-bold text-gray-900">{s.stat}</p>
-            <p className="text-sm text-gray-500">{s.label}</p>
+          <Card key={s.title} className="p-5">
+            <p className="font-semibold text-gray-900 mb-1">{s.title}</p>
+            <p className="text-sm text-gray-500">{s.body}</p>
           </Card>
         ))}
       </div>
