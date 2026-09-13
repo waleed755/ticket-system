@@ -6,6 +6,7 @@ import { listPublishedEvents } from "@/lib/public-events";
 import { prisma } from "@/lib/prisma";
 import SearchBar from "@/components/site/search-bar";
 import Reveal from "@/components/site/reveal";
+import { formatShortDate } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -118,6 +119,54 @@ export default async function HomePage() {
         </Container>
       </section>
 
+      {/* Featured event spotlight */}
+      {spotlight && (
+        <section className="bg-ink py-14 sm:py-20">
+          <Container>
+            <Reveal>
+              <div className="flex items-center gap-2 mb-6">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-pink opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-pink" />
+                </span>
+                <p className="text-white/70 font-semibold uppercase tracking-wide text-xs">Featured event</p>
+              </div>
+            </Reveal>
+            <Reveal>
+              <Link
+                href={`/events/${spotlight.event.slug}`}
+                className="group block overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10 bg-ink"
+              >
+                <div className="relative aspect-[1280/476] w-full bg-black">
+                  <Image
+                    src="/adnan-dhool-banner.jpg"
+                    alt={spotlight.event.name}
+                    fill
+                    sizes="100vw"
+                    priority
+                    className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  />
+                </div>
+                <div className="p-5 sm:p-8 flex flex-wrap items-center justify-between gap-4 border-t border-white/10">
+                  <div>
+                    <h3 className="text-white font-extrabold text-xl sm:text-2xl mb-1">{spotlight.event.name}</h3>
+                    <p className="text-white/70 text-sm">
+                      {formatShortDate(spotlight.event.startAt, spotlight.event.timezone)}
+                      {spotlight.event.venueName ? ` · ${spotlight.event.venueName}` : ""}
+                      {spotlight.event.city ? `, ${spotlight.event.city}` : ""}
+                    </p>
+                  </div>
+                  <span className="inline-flex items-center gap-2 bg-white text-ink font-bold px-5 py-2.5 rounded-full shadow-lg group-hover:gap-3 transition-all whitespace-nowrap">
+                    Book Now
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                  </span>
+                </div>
+              </Link>
+            </Reveal>
+          </Container>
+        </section>
+      )}
+
       {/* Find your scene */}
       <Container className="py-16">
         <Reveal>
@@ -179,39 +228,39 @@ export default async function HomePage() {
         </Container>
       )}
 
-      {upcoming.length > 0 && (
-        <Container className="py-12">
+      {/* Ticket pricing spotlight */}
+      {spotlight && (
+        <Container className="py-16">
           <Reveal>
-            <h3 className="text-xl font-bold text-ink mb-6">Upcoming events</h3>
-          </Reveal>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {upcoming.map((m, i) => (
-              <Reveal key={m.event.id} delay={i * 60}>
-                <EventCard
-                  data={{
-                    id: m.event.id,
-                    slug: m.event.slug,
-                    name: m.event.name,
-                    shortDescription: m.event.shortDescription,
-                    coverImage: m.event.coverImage,
-                    startAt: m.event.startAt,
-                    endAt: m.event.endAt,
-                    timezone: m.event.timezone,
-                    format: m.event.format,
-                    venueName: m.event.venueName,
-                    city: m.event.city,
-                    lowestPrice: m.lowestPrice,
-                    isFree: m.isFree,
-                    displayStatus: m.displayStatus,
-                    categoryName: m.event.category.name,
-                  }}
+            <Link
+              href={`/events/${spotlight.event.slug}`}
+              className="group grid sm:grid-cols-2 rounded-2xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-2xl transition-shadow bg-white"
+            >
+              <div className="relative aspect-square sm:aspect-auto overflow-hidden">
+                <Image
+                  src="/adnan-dhool-poster.jpg"
+                  alt={`${spotlight.event.name} ticket pricing`}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-              </Reveal>
-            ))}
-          </div>
-          <div className="mt-10 text-center">
-            <LinkButton href="/events" variant="secondary">View all events</LinkButton>
-          </div>
+              </div>
+              <div className="p-8 sm:p-10 flex flex-col justify-center bg-ink text-white">
+                <p className="text-brand-pink font-semibold uppercase tracking-wide text-xs mb-3">Early bird pricing</p>
+                <h3 className="text-2xl sm:text-3xl font-extrabold mb-3 leading-tight">
+                  Lock in your seat before prices go up.
+                </h3>
+                <p className="text-white/70 mb-6">
+                  VIP rows, reserved seating, family &amp; stag sections — see every tier and grab the early bird
+                  discount while it lasts.
+                </p>
+                <span className="inline-flex items-center gap-2 self-start bg-brand-gradient bg-[length:200%_auto] group-hover:bg-right transition-[background-position,gap] duration-500 text-white font-bold px-6 py-3 rounded-full">
+                  View Ticket Pricing
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                </span>
+              </div>
+            </Link>
+          </Reveal>
         </Container>
       )}
 
@@ -226,14 +275,14 @@ export default async function HomePage() {
           <div className="grid sm:grid-cols-2 gap-5 max-w-2xl">
             <Reveal>
               <Card className="p-6 border-2 !border-brand-purple">
-                <p className="text-xs font-bold text-ink/60 uppercase tracking-wide mb-2">First 1,000 followers</p>
+                <p className="text-xs font-bold text-ink/60 uppercase tracking-wide mb-2">First 1,000</p>
                 <p className="text-3xl font-extrabold text-brand-purple mb-1">5% OFF FOR LIFE</p>
                 <p className="text-sm text-gray-500">Eligible Ticket Buddy bookings</p>
               </Card>
             </Reveal>
             <Reveal delay={100}>
               <Card className="p-6 border-2 !border-brand-pink">
-                <p className="text-xs font-bold text-ink/60 uppercase tracking-wide mb-2">First 10,000 followers</p>
+                <p className="text-xs font-bold text-ink/60 uppercase tracking-wide mb-2">First 10,000</p>
                 <p className="text-3xl font-extrabold text-brand-pink mb-1">5% OFF FOR 1 YEAR</p>
                 <p className="text-sm text-gray-500">Eligible Ticket Buddy bookings</p>
               </Card>

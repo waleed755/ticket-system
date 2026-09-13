@@ -17,7 +17,7 @@ export default async function Header() {
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-gray-200">
       <div className="container-page flex h-20 items-center justify-between">
         <Link href="/" className="flex items-center shrink-0">
-          <Image src="/logo.png" alt="Ticket Buddy" width={180} height={56} priority className="h-11 w-auto object-contain" />
+          <Image src="/logo.png" alt="Ticket Buddy" width={220} height={68} priority className="h-16 w-auto object-contain" />
         </Link>
         <nav className="hidden md:flex items-center gap-7 text-sm font-semibold text-ink">
           {navLinks.map((l) => (
