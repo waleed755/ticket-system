@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Container, LinkButton, Card } from "@/components/ui";
+import { Container, LinkButton } from "@/components/ui";
 import EventCard from "@/components/site/event-card";
 import { listPublishedEvents } from "@/lib/public-events";
 import { prisma } from "@/lib/prisma";
@@ -264,37 +264,6 @@ export default async function HomePage() {
         </Container>
       )}
 
-      {/* Launch offer */}
-      <section className="mt-8 bg-gradient-to-r from-ink via-brand-purple/80 to-brand-pink/70 relative overflow-hidden">
-        <Container className="py-16 relative">
-          <Reveal>
-            <p className="text-white/70 font-semibold uppercase tracking-wide text-xs mb-2">Launch offer</p>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-2">Be early. Save more.</h2>
-            <p className="text-white/80 mb-8">Our earliest Ticket Buddies get rewarded.</p>
-          </Reveal>
-          <div className="grid sm:grid-cols-2 gap-5 max-w-2xl">
-            <Reveal>
-              <Card className="p-6 border-2 !border-brand-purple">
-                <p className="text-xs font-bold text-ink/60 uppercase tracking-wide mb-2">First 1,000</p>
-                <p className="text-3xl font-extrabold text-brand-purple mb-1">5% OFF FOR LIFE</p>
-                <p className="text-sm text-gray-500">Eligible Ticket Buddy bookings</p>
-              </Card>
-            </Reveal>
-            <Reveal delay={100}>
-              <Card className="p-6 border-2 !border-brand-pink">
-                <p className="text-xs font-bold text-ink/60 uppercase tracking-wide mb-2">First 10,000</p>
-                <p className="text-3xl font-extrabold text-brand-pink mb-1">5% OFF FOR 1 YEAR</p>
-                <p className="text-sm text-gray-500">Eligible Ticket Buddy bookings</p>
-              </Card>
-            </Reveal>
-          </div>
-          <p className="text-xs text-white/60 mt-6">On eligible Ticket Buddy bookings. Terms and conditions apply.</p>
-          <div className="mt-6">
-            <LinkButton href="/#stay-updated" variant="secondary">Follow Ticket Buddy</LinkButton>
-          </div>
-        </Container>
-      </section>
-
       {/* Three steps */}
       <Container className="py-20">
         <Reveal>
@@ -352,24 +321,6 @@ export default async function HomePage() {
           </div>
         </Container>
       )}
-
-      {/* Final CTA */}
-      <section className="relative overflow-hidden bg-ink">
-        {spotlight && (
-          <Image src={spotlight.event.coverImage} alt="" fill className="object-cover opacity-25" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/90 to-ink/70" />
-        <Container className="relative py-20 text-center">
-          <Reveal>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-4">
-              Don&apos;t just hear about it. <span className="gradient-text">Be there.</span>
-            </h2>
-            <LinkButton href="/events" size="lg" className="!bg-brand-gradient !bg-[length:200%_auto] hover:!bg-right transition-[background-position] duration-500">
-              Explore Events
-            </LinkButton>
-          </Reveal>
-        </Container>
-      </section>
     </div>
   );
 }
