@@ -1,9 +1,29 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+const APP_URL = process.env.APP_URL || "http://localhost:3000";
+
 export const metadata: Metadata = {
-  title: "TicketBuddy.pk — Discover & Book Amazing Events",
-  description: "Browse events, book tickets in minutes, and manage everything from one account.",
+  metadataBase: new URL(APP_URL),
+  title: {
+    default: "Ticket Buddy — Find It. Book It. Be There.",
+    template: "%s — Ticket Buddy",
+  },
+  description: "Pakistan's platform for concerts, conferences & live events. Browse events, book tickets in minutes, and pay securely with JazzCash.",
+  openGraph: {
+    title: "Ticket Buddy — Find It. Book It. Be There.",
+    description: "Pakistan's platform for concerts, conferences & live events.",
+    siteName: "Ticket Buddy",
+    images: [{ url: "/social-share.jpg", width: 1200, height: 630 }],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ticket Buddy — Find It. Book It. Be There.",
+    description: "Pakistan's platform for concerts, conferences & live events.",
+    images: ["/social-share.jpg"],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

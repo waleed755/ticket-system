@@ -1,183 +1,326 @@
 import Link from "next/link";
-import { Container, LinkButton, SectionHeading, Card } from "@/components/ui";
+import Image from "next/image";
+import { Container, LinkButton, Card } from "@/components/ui";
 import EventCard from "@/components/site/event-card";
 import { listPublishedEvents } from "@/lib/public-events";
 import { prisma } from "@/lib/prisma";
 import SearchBar from "@/components/site/search-bar";
+import Reveal from "@/components/site/reveal";
 
 export const dynamic = "force-dynamic";
 
+const SCENES = [
+  {
+    label: "Concerts",
+    query: "concert",
+    icon: (
+      <path d="M9 18V5l12-2v13M9 18a3 3 0 11-6 0 3 3 0 016 0zM21 16a3 3 0 11-6 0 3 3 0 016 0z" />
+    ),
+  },
+  {
+    label: "Comedy",
+    query: "comedy",
+    icon: <><circle cx="12" cy="12" r="9" /><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01" /></>,
+  },
+  {
+    label: "Festivals",
+    query: "festival",
+    icon: <path d="M5 3v18M5 4l13 3-13 4" />,
+  },
+  {
+    label: "Theatre",
+    query: "theatre",
+    icon: (
+      <>
+        <path d="M8 9a3 3 0 106 0 3 3 0 00-6 0zM8 9c0 3-3 4-3 7a3 3 0 006 0M14 9c0 3 3 4 3 7a3 3 0 01-6 0" />
+      </>
+    ),
+  },
+  {
+    label: "Sports",
+    query: "sports",
+    icon: (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 3v6l5 3-2 6h-6l-2-6 5-3z" />
+      </>
+    ),
+  },
+  {
+    label: "Experiences",
+    query: "experience",
+    icon: <path d="M12 2l2.9 6.1 6.7.9-4.9 4.6 1.2 6.6L12 17l-6 3.2 1.2-6.6-4.9-4.6 6.7-.9z" />,
+  },
+];
+
 export default async function HomePage() {
-  const [all, categories, faqs] = await Promise.all([
+  const [all, faqs] = await Promise.all([
     listPublishedEvents({ sort: "date" }),
-    prisma.eventCategory.findMany({ include: { _count: { select: { events: true } } } }),
-    prisma.siteFAQ.findMany({ orderBy: { position: "asc" }, take: 5 }),
+    prisma.siteFAQ.findMany({ orderBy: { position: "asc" }, take: 4 }),
   ]);
 
   const featured = all.filter((m) => m.event.featured).slice(0, 3);
   const upcoming = all.slice(0, 8);
+  const spotlight = featured[0] ?? upcoming[0];
 
   return (
     <div>
       {/* Hero */}
-      <section className="relative bg-gray-900 text-white overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-gray-900 to-gray-900" />
-        <Container className="relative py-20 sm:py-28">
-          <p className="text-brand font-semibold mb-3 tracking-wide uppercase text-sm">Discover · Book · Attend</p>
-          <h1 className="text-4xl sm:text-5xl font-extrabold max-w-2xl leading-tight">
-            Pakistan&apos;s platform for concerts, conferences & live events
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1920"
+            alt=""
+            fill
+            priority
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/85 to-ink/40" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent" />
+        </div>
+
+        <Container className="relative py-24 sm:py-32">
+          <p className="text-white/70 font-semibold mb-4 tracking-wide uppercase text-xs">Find It · Book It · Be There</p>
+          <h1 className="text-4xl sm:text-6xl font-extrabold max-w-2xl leading-[1.05] text-white">
+            Your ticket to <span className="gradient-text">what&apos;s happening.</span>
           </h1>
-          <p className="mt-4 text-lg text-gray-300 max-w-xl">
-            Browse events, book tickets in minutes, and pay securely with JazzCash — no account required to get started.
+          <p className="mt-5 text-lg text-white/80 max-w-xl">
+            Concerts, comedy, festivals, sports, experiences &amp; more.
           </p>
-          <div className="mt-8 max-w-2xl">
+
+          <div className="mt-8 max-w-xl">
             <SearchBar />
           </div>
-          <div className="mt-6 flex flex-wrap gap-3 text-sm text-gray-300">
-            {categories.map((c) => (
-              <Link key={c.id} href={`/events?category=${c.slug}`} className="rounded-full border border-gray-700 px-3 py-1 hover:border-brand hover:text-white">
-                {c.name} ({c._count.events})
-              </Link>
-            ))}
+
+          <div className="mt-8 flex flex-wrap gap-x-8 gap-y-4 text-white">
+            <div className="flex items-center gap-2">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M4 7l16-2v14l-16-2V7z" /><path d="M4 7a2 2 0 002-2M20 5a2 2 0 01-2 2M4 17a2 2 0 012 2M20 19a2 2 0 00-2-2" /></svg>
+              <div>
+                <p className="text-sm font-semibold leading-tight">Find Events</p>
+                <p className="text-xs text-white/60 leading-tight">Discover what&apos;s on</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>
+              <div>
+                <p className="text-sm font-semibold leading-tight">Book Securely</p>
+                <p className="text-xs text-white/60 leading-tight">via JazzCash</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="9" cy="8" r="3" /><circle cx="17" cy="9" r="2.5" /><path d="M3 20c0-3 2.5-5 6-5s6 2 6 5M15 15c2.8 0 5 1.8 5 4.5" /></svg>
+              <div>
+                <p className="text-sm font-semibold leading-tight">Be There</p>
+                <p className="text-xs text-white/60 leading-tight">Create memories</p>
+              </div>
+            </div>
           </div>
         </Container>
       </section>
 
-      {/* Featured */}
+      {/* Find your scene */}
+      <Container className="py-16">
+        <Reveal>
+          <h2 className="text-2xl sm:text-3xl font-bold text-ink mb-1">Find your scene.</h2>
+          <p className="text-gray-500 mb-8">Browse events by category.</p>
+        </Reveal>
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
+          {SCENES.map((s, i) => (
+            <Reveal key={s.label} delay={i * 60}>
+              <Link
+                href={`/events?q=${encodeURIComponent(s.query)}`}
+                className="group flex flex-col items-center gap-3 p-4 rounded-xl hover:bg-gray-50 transition-colors"
+              >
+                <span className="h-14 w-14 rounded-full border-2 border-ink/10 flex items-center justify-center text-ink group-hover:border-brand group-hover:text-brand group-hover:scale-105 transition-all">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    {s.icon}
+                  </svg>
+                </span>
+                <span className="text-sm font-semibold text-ink text-center">{s.label}</span>
+              </Link>
+            </Reveal>
+          ))}
+        </div>
+        <p className="text-center text-xs text-gray-400 uppercase tracking-wide mt-6">And more — events coming soon</p>
+      </Container>
+
+      {/* Featured / Upcoming */}
       {featured.length > 0 && (
-        <Container className="py-16">
-          <SectionHeading eyebrow="Don't miss out" title="Featured events" description="Hand-picked events our community is most excited about." />
+        <Container className="py-8">
+          <Reveal>
+            <h2 className="text-2xl sm:text-3xl font-bold text-ink mb-1">What&apos;s happening?</h2>
+            <p className="text-gray-500 mb-8">Discover events worth showing up for.</p>
+          </Reveal>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featured.map((m) => (
-              <EventCard
-                key={m.event.id}
-                data={{
-                  id: m.event.id,
-                  slug: m.event.slug,
-                  name: m.event.name,
-                  shortDescription: m.event.shortDescription,
-                  coverImage: m.event.coverImage,
-                  startAt: m.event.startAt,
-                  endAt: m.event.endAt,
-                  timezone: m.event.timezone,
-                  format: m.event.format,
-                  venueName: m.event.venueName,
-                  city: m.event.city,
-                  lowestPrice: m.lowestPrice,
-                  isFree: m.isFree,
-                  displayStatus: m.displayStatus,
-                  categoryName: m.event.category.name,
-                }}
-              />
+            {featured.map((m, i) => (
+              <Reveal key={m.event.id} delay={i * 80}>
+                <EventCard
+                  data={{
+                    id: m.event.id,
+                    slug: m.event.slug,
+                    name: m.event.name,
+                    shortDescription: m.event.shortDescription,
+                    coverImage: m.event.coverImage,
+                    startAt: m.event.startAt,
+                    endAt: m.event.endAt,
+                    timezone: m.event.timezone,
+                    format: m.event.format,
+                    venueName: m.event.venueName,
+                    city: m.event.city,
+                    lowestPrice: m.lowestPrice,
+                    isFree: m.isFree,
+                    displayStatus: m.displayStatus,
+                    categoryName: m.event.category.name,
+                  }}
+                />
+              </Reveal>
             ))}
           </div>
         </Container>
       )}
 
-      {/* Upcoming */}
-      <Container className="py-8">
-        <SectionHeading eyebrow="Happening soon" title="Upcoming events" description="Browse what's coming up across every category." />
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {upcoming.map((m) => (
-            <EventCard
-              key={m.event.id}
-              data={{
-                id: m.event.id,
-                slug: m.event.slug,
-                name: m.event.name,
-                shortDescription: m.event.shortDescription,
-                coverImage: m.event.coverImage,
-                startAt: m.event.startAt,
-                endAt: m.event.endAt,
-                timezone: m.event.timezone,
-                format: m.event.format,
-                venueName: m.event.venueName,
-                city: m.event.city,
-                lowestPrice: m.lowestPrice,
-                isFree: m.isFree,
-                displayStatus: m.displayStatus,
-                categoryName: m.event.category.name,
-              }}
-            />
-          ))}
-        </div>
-        <div className="mt-8 text-center">
-          <LinkButton href="/events" variant="secondary">
-            View all events
-          </LinkButton>
-        </div>
-      </Container>
-
-      {/* Why us */}
-      <div className="bg-white border-y border-gray-200 mt-16">
-        <Container className="py-16">
-          <SectionHeading eyebrow="Why TicketBuddy.pk" title="Booking made effortless" />
+      {upcoming.length > 0 && (
+        <Container className="py-12">
+          <Reveal>
+            <h3 className="text-xl font-bold text-ink mb-6">Upcoming events</h3>
+          </Reveal>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { title: "No account required", body: "Book as a guest in minutes — we'll set up your account automatically after checkout." },
-              { title: "Pay with JazzCash", body: "Checkout securely with your JazzCash wallet or linked card — we never store your payment details." },
-              { title: "Instant e-tickets", body: "Every attendee gets a unique, scannable ticket delivered by email the moment payment clears." },
-              { title: "Fair refund policy", body: "Clear, consistent refund rules across every event — refundable up to 48 hours before the show." },
-            ].map((f) => (
-              <Card key={f.title} className="p-6">
-                <h3 className="font-bold text-gray-900 mb-2">{f.title}</h3>
-                <p className="text-sm text-gray-600">{f.body}</p>
-              </Card>
+            {upcoming.map((m, i) => (
+              <Reveal key={m.event.id} delay={i * 60}>
+                <EventCard
+                  data={{
+                    id: m.event.id,
+                    slug: m.event.slug,
+                    name: m.event.name,
+                    shortDescription: m.event.shortDescription,
+                    coverImage: m.event.coverImage,
+                    startAt: m.event.startAt,
+                    endAt: m.event.endAt,
+                    timezone: m.event.timezone,
+                    format: m.event.format,
+                    venueName: m.event.venueName,
+                    city: m.event.city,
+                    lowestPrice: m.lowestPrice,
+                    isFree: m.isFree,
+                    displayStatus: m.displayStatus,
+                    categoryName: m.event.category.name,
+                  }}
+                />
+              </Reveal>
             ))}
           </div>
+          <div className="mt-10 text-center">
+            <LinkButton href="/events" variant="secondary">View all events</LinkButton>
+          </div>
         </Container>
-      </div>
+      )}
 
-      {/* How it works */}
-      <Container className="py-16">
-        <SectionHeading eyebrow="Simple process" title="How booking works" />
-        <div className="grid sm:grid-cols-4 gap-6">
+      {/* Launch offer */}
+      <section className="mt-8 bg-gradient-to-r from-ink via-brand-purple/80 to-brand-pink/70 relative overflow-hidden">
+        <Container className="py-16 relative">
+          <Reveal>
+            <p className="text-white/70 font-semibold uppercase tracking-wide text-xs mb-2">Launch offer</p>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-2">Be early. Save more.</h2>
+            <p className="text-white/80 mb-8">Our earliest Ticket Buddies get rewarded.</p>
+          </Reveal>
+          <div className="grid sm:grid-cols-2 gap-5 max-w-2xl">
+            <Reveal>
+              <Card className="p-6 border-2 !border-brand-purple">
+                <p className="text-xs font-bold text-ink/60 uppercase tracking-wide mb-2">First 1,000 followers</p>
+                <p className="text-3xl font-extrabold text-brand-purple mb-1">5% OFF FOR LIFE</p>
+                <p className="text-sm text-gray-500">Eligible Ticket Buddy bookings</p>
+              </Card>
+            </Reveal>
+            <Reveal delay={100}>
+              <Card className="p-6 border-2 !border-brand-pink">
+                <p className="text-xs font-bold text-ink/60 uppercase tracking-wide mb-2">First 10,000 followers</p>
+                <p className="text-3xl font-extrabold text-brand-pink mb-1">5% OFF FOR 1 YEAR</p>
+                <p className="text-sm text-gray-500">Eligible Ticket Buddy bookings</p>
+              </Card>
+            </Reveal>
+          </div>
+          <p className="text-xs text-white/60 mt-6">On eligible Ticket Buddy bookings. Terms and conditions apply.</p>
+          <div className="mt-6">
+            <LinkButton href="/#stay-updated" variant="secondary">Follow Ticket Buddy</LinkButton>
+          </div>
+        </Container>
+      </section>
+
+      {/* Three steps */}
+      <Container className="py-20">
+        <Reveal>
+          <h2 className="text-2xl sm:text-3xl font-bold text-ink text-center mb-1">Three steps. That&apos;s it.</h2>
+          <p className="text-gray-500 text-center mb-10">Find it. Book it. Be there.</p>
+        </Reveal>
+        <div className="grid sm:grid-cols-3 gap-8 max-w-3xl mx-auto">
           {[
-            { step: "1", title: "Find an event", body: "Search or browse by category, city, or date." },
-            { step: "2", title: "Choose tickets", body: "Pick ticket types and enter attendee details." },
-            { step: "3", title: "Pay via JazzCash", body: "Pay securely with your JazzCash wallet or card — free events skip this step." },
-            { step: "4", title: "Get your tickets", body: "Tickets arrive by email and in your dashboard instantly." },
-          ].map((s) => (
-            <div key={s.step}>
-              <div className="h-10 w-10 rounded-full bg-brand text-white font-bold flex items-center justify-center mb-3">{s.step}</div>
-              <h3 className="font-semibold text-gray-900 mb-1">{s.title}</h3>
+            { title: "Find It.", body: "Discover what's happening." },
+            { title: "Book It.", body: "Get your ticket online — pay securely via JazzCash." },
+            { title: "Be There.", body: "Show your ticket and enjoy." },
+          ].map((s, i) => (
+            <Reveal key={s.title} delay={i * 100} className="text-center">
+              <div className="h-14 w-14 rounded-full bg-brand-gradient text-white font-bold flex items-center justify-center mx-auto mb-4 text-lg">
+                {i + 1}
+              </div>
+              <h3 className="font-bold text-ink text-lg mb-1">{s.title}</h3>
               <p className="text-sm text-gray-600">{s.body}</p>
-            </div>
+            </Reveal>
           ))}
         </div>
       </Container>
 
-      {/* Support */}
-      <div className="bg-gray-900 text-white">
+      {/* Organizer CTA */}
+      <div className="bg-ink">
         <Container className="py-16 grid sm:grid-cols-2 gap-8 items-center">
-          <div>
-            <h2 className="text-2xl font-bold mb-2">Need help with a booking?</h2>
-            <p className="text-gray-300">Our support team responds within one business day for questions about bookings, refunds, or event details.</p>
-          </div>
-          <div className="flex sm:justify-end gap-3">
-            <LinkButton href="/contact" variant="primary">Contact Support</LinkButton>
-            <LinkButton href="/faq" variant="secondary" className="!bg-transparent !text-white !border-gray-600">
-              Read FAQ
+          <Reveal>
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">Got an event?</h2>
+            <p className="text-white/70">Sell tickets and reach your audience with Ticket Buddy.</p>
+          </Reveal>
+          <Reveal delay={100} className="sm:text-right">
+            <LinkButton href="/for-organizers" className="!bg-brand-gradient !bg-[length:200%_auto] hover:!bg-right transition-[background-position] duration-500">
+              List Your Event
             </LinkButton>
-          </div>
+          </Reveal>
         </Container>
       </div>
 
       {/* FAQ */}
-      <Container className="py-16">
-        <SectionHeading eyebrow="Questions" title="Frequently asked questions" />
-        <div className="grid sm:grid-cols-2 gap-6">
-          {faqs.map((f) => (
-            <div key={f.id}>
-              <h3 className="font-semibold text-gray-900 mb-1">{f.question}</h3>
-              <p className="text-sm text-gray-600">{f.answer}</p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-6">
-          <LinkButton href="/faq" variant="ghost">See all FAQs →</LinkButton>
-        </div>
-      </Container>
+      {faqs.length > 0 && (
+        <Container className="py-16">
+          <Reveal>
+            <h2 className="text-2xl font-bold text-ink mb-8">Frequently asked questions</h2>
+          </Reveal>
+          <div className="grid sm:grid-cols-2 gap-6">
+            {faqs.map((f, i) => (
+              <Reveal key={f.id} delay={i * 60}>
+                <h3 className="font-semibold text-ink mb-1">{f.question}</h3>
+                <p className="text-sm text-gray-600">{f.answer}</p>
+              </Reveal>
+            ))}
+          </div>
+          <div className="mt-6">
+            <LinkButton href="/faq" variant="ghost">See all FAQs →</LinkButton>
+          </div>
+        </Container>
+      )}
+
+      {/* Final CTA */}
+      <section className="relative overflow-hidden bg-ink">
+        {spotlight && (
+          <Image src={spotlight.event.coverImage} alt="" fill className="object-cover opacity-25" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/90 to-ink/70" />
+        <Container className="relative py-20 text-center">
+          <Reveal>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-4">
+              Don&apos;t just hear about it. <span className="gradient-text">Be there.</span>
+            </h2>
+            <LinkButton href="/events" size="lg" className="!bg-brand-gradient !bg-[length:200%_auto] hover:!bg-right transition-[background-position] duration-500">
+              Explore Events
+            </LinkButton>
+          </Reveal>
+        </Container>
+      </section>
     </div>
   );
 }

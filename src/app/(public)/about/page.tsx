@@ -5,7 +5,7 @@ export default async function AboutPage() {
   const page = await prisma.page.findUnique({ where: { slug: "about" } });
   return (
     <Container className="py-14 max-w-3xl">
-      <SectionHeading eyebrow="Who we are" title={page?.title ?? "About TicketBuddy.pk"} />
+      <SectionHeading eyebrow="Who we are" title={page?.title ?? "About Ticket Buddy"} />
       <div className="prose-body text-gray-700 whitespace-pre-line">{page?.content}</div>
       <div className="grid sm:grid-cols-3 gap-4 mt-10">
         {[

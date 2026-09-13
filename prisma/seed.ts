@@ -116,7 +116,7 @@ async function main() {
         "Attendees must be 18+. Badges are non-transferable once printed. Photography and recording will occur throughout the venue for promotional purposes.",
       ageRestriction: "18+",
       entryRequirements: "Government-issued photo ID required for badge pickup.",
-      organizerName: "TicketBuddy.pk",
+      organizerName: "Ticket Buddy",
       organizerEmail: "organizer@ticketbuddy.pk",
       organizerBio: "Producing premier technology conferences since 2015.",
       status: "PUBLISHED",
@@ -291,7 +291,7 @@ async function main() {
       refundDeadlineHours: 48,
       refundPolicy: "This is a free event — no payment or refund applicable. You may cancel your registration any time from your dashboard.",
       termsAndConditions: "This session will be recorded. By registering you consent to being visible in the live chat/Q&A panel if you choose to participate.",
-      organizerName: "TicketBuddy.pk",
+      organizerName: "Ticket Buddy",
       organizerEmail: "webinars@ticketbuddy.pk",
       status: "PUBLISHED",
       visibility: "PUBLIC",
@@ -408,7 +408,7 @@ async function main() {
       bookingEndAt: daysFromNow(69),
       refundPolicy: "Full refund up to 48 hours before the event.",
       termsAndConditions: "Details to be finalized.",
-      organizerName: "TicketBuddy.pk",
+      organizerName: "Ticket Buddy",
       organizerEmail: "organizer@ticketbuddy.pk",
       status: "DRAFT",
       visibility: "PUBLIC",
@@ -761,9 +761,9 @@ async function main() {
     data: [
       {
         slug: "about",
-        title: "About TicketBuddy.pk",
+        title: "About Ticket Buddy",
         content:
-          "TicketBuddy.pk is a modern ticketing platform built for organizers who care about the details — from a smooth checkout to a check-in line that never backs up. Founded in 2021, we now power conferences, festivals, comedy nights, and community events for organizers across the country. Our mission is simple: make it effortless for people to discover events worth attending, and effortless for organizers to run them.",
+          "Ticket Buddy is a modern ticketing platform built for organizers who care about the details — from a smooth checkout to a check-in line that never backs up. Founded in 2021, we now power conferences, festivals, comedy nights, and community events for organizers across the country. Our mission is simple: make it effortless for people to discover events worth attending, and effortless for organizers to run them.",
       },
       {
         slug: "contact",
@@ -775,13 +775,13 @@ async function main() {
         slug: "refund-policy",
         title: "Refund & Cancellation Policy",
         content:
-          "Unless otherwise noted on a specific event page, tickets purchased through TicketBuddy.pk may be refunded up until 48 hours before the event's scheduled start time. Refund requests submitted less than 48 hours before an event, after the event has started, or after the event has ended will not be accepted. Checked-in tickets are not eligible for refunds. If an event is cancelled or significantly rescheduled by its organizer, affected customers will be contacted directly with refund or credit options, which may fall outside the standard 48-hour window at the organizer's discretion.",
+          "Unless otherwise noted on a specific event page, tickets purchased through Ticket Buddy may be refunded up until 48 hours before the event's scheduled start time. Refund requests submitted less than 48 hours before an event, after the event has started, or after the event has ended will not be accepted. Checked-in tickets are not eligible for refunds. If an event is cancelled or significantly rescheduled by its organizer, affected customers will be contacted directly with refund or credit options, which may fall outside the standard 48-hour window at the organizer's discretion.",
       },
       {
         slug: "terms",
         title: "Terms and Conditions",
         content:
-          "By purchasing a ticket through TicketBuddy.pk, you agree to the specific terms of the event you're attending (shown on each event page) as well as these general platform terms: tickets are issued to the named attendee and are not to be resold above face value; TicketBuddy.pk acts as a ticketing platform on behalf of independent event organizers and is not itself the organizer of most listed events; entry to an event may be refused if a ticket is found to be fraudulent, duplicated, or in violation of an event's specific entry requirements.",
+          "By purchasing a ticket through Ticket Buddy, you agree to the specific terms of the event you're attending (shown on each event page) as well as these general platform terms: tickets are issued to the named attendee and are not to be resold above face value; Ticket Buddy acts as a ticketing platform on behalf of independent event organizers and is not itself the organizer of most listed events; entry to an event may be refused if a ticket is found to be fraudulent, duplicated, or in violation of an event's specific entry requirements.",
       },
       {
         slug: "privacy",

@@ -1,27 +1,27 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getSession } from "@/lib/auth";
 import { LinkButton } from "@/components/ui";
 
 const navLinks = [
-  { href: "/events", label: "Browse Events" },
-  { href: "/how-it-works", label: "How It Works" },
+  { href: "/events", label: "Events" },
+  { href: "/for-organizers", label: "For Organizers" },
   { href: "/about", label: "About" },
-  { href: "/contact", label: "Support" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export default async function Header() {
   const session = await getSession();
 
   return (
-    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-gray-200">
-      <div className="container-page flex h-16 items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-bold text-lg text-gray-900">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white text-sm">T</span>
-          TicketBuddy.pk
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-gray-200">
+      <div className="container-page flex h-20 items-center justify-between">
+        <Link href="/" className="flex items-center shrink-0">
+          <Image src="/logo.png" alt="Ticket Buddy" width={180} height={56} priority className="h-11 w-auto object-contain" />
         </Link>
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
+        <nav className="hidden md:flex items-center gap-7 text-sm font-semibold text-ink">
           {navLinks.map((l) => (
-            <Link key={l.href} href={l.href} className="hover:text-gray-900">
+            <Link key={l.href} href={l.href} className="hover:text-brand transition-colors">
               {l.label}
             </Link>
           ))}
@@ -29,7 +29,7 @@ export default async function Header() {
         <div className="flex items-center gap-3">
           {session?.role === "CUSTOMER" ? (
             <LinkButton href="/account" variant="secondary" size="sm">
-              My Account
+              My Tickets
             </LinkButton>
           ) : session ? (
             <LinkButton href="/admin" variant="secondary" size="sm">
@@ -37,11 +37,11 @@ export default async function Header() {
             </LinkButton>
           ) : (
             <LinkButton href="/login" variant="secondary" size="sm">
-              Sign in
+              My Tickets
             </LinkButton>
           )}
-          <LinkButton href="/events" size="sm">
-            Find Events
+          <LinkButton href="/events" size="sm" className="!bg-brand-gradient !bg-[length:200%_auto] hover:!bg-right transition-[background-position] duration-500">
+            Explore Events
           </LinkButton>
         </div>
       </div>

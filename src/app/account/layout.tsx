@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { Container } from "@/components/ui";
@@ -18,9 +19,8 @@ export default async function AccountLayout({ children }: { children: React.Reac
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200">
         <Container className="flex h-16 items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-bold text-lg text-gray-900">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white text-sm">T</span>
-            TicketBuddy.pk
+          <Link href="/" className="flex items-center">
+            <Image src="/logo.png" alt="Ticket Buddy" width={150} height={47} className="h-9 w-auto object-contain" />
           </Link>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-500">{session.fullName}</span>

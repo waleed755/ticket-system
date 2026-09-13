@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import LogoutButton from "@/components/site/logout-button";
@@ -10,7 +11,7 @@ export default async function CheckinLayout({ children }: { children: React.Reac
     <div className="min-h-screen bg-gray-950 text-white">
       <header className="h-14 flex items-center justify-between px-4 border-b border-gray-800">
         <div className="flex items-center gap-2 font-bold">
-          <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-brand text-white text-xs">T</span>
+          <Image src="/icon.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />
           Check-in
         </div>
         <div className="flex items-center gap-3 text-sm">

@@ -2,8 +2,8 @@ import Link from "next/link";
 import { Container, SectionHeading, Card, LinkButton } from "@/components/ui";
 
 export const metadata = {
-  title: "How It Works — TicketBuddy.pk",
-  description: "How TicketBuddy.pk works: browsing events, booking tickets, paying securely, and receiving your tickets.",
+  title: "How It Works — Ticket Buddy",
+  description: "How Ticket Buddy works: browsing events, booking tickets, paying securely, and receiving your tickets.",
 };
 
 export default function HowItWorksPage() {
@@ -12,8 +12,8 @@ export default function HowItWorksPage() {
       <Container className="py-14 max-w-4xl">
         <SectionHeading
           eyebrow="Our business model"
-          title="How TicketBuddy.pk works"
-          description="TicketBuddy.pk is an online ticketing platform based in Lahore, Pakistan. We provide event organizers — such as Actual Wala Live — with the tools to list events and sell tickets online, and we provide customers with a simple, secure way to discover events, buy tickets, and receive them instantly by email."
+          title="How Ticket Buddy works"
+          description="Ticket Buddy is an online ticketing platform based in Lahore, Pakistan. We provide event organizers — such as Actual Wala Live — with the tools to list events and sell tickets online, and we provide customers with a simple, secure way to discover events, buy tickets, and receive them instantly by email."
         />
 
         <section className="mb-12">
@@ -40,11 +40,11 @@ export default function HowItWorksPage() {
             <p className="text-sm text-gray-700 mb-3">
               JazzCash is our payment gateway for all ticket purchases. When a customer clicks &quot;Pay,&quot; they are redirected to
               JazzCash&apos;s secure hosted payment page, where they authenticate and approve the payment using their own JazzCash
-              wallet PIN or card credentials. JazzCash then confirms the transaction back to TicketBuddy.pk, and the booking is
+              wallet PIN or card credentials. JazzCash then confirms the transaction back to Ticket Buddy, and the booking is
               marked as paid — this happens automatically, with no manual step required from our side.
             </p>
             <p className="text-sm text-gray-700">
-              All prices on TicketBuddy.pk are displayed and charged in Pakistani Rupees (PKR). We do not store card numbers,
+              All prices on Ticket Buddy are displayed and charged in Pakistani Rupees (PKR). We do not store card numbers,
               wallet PINs, or CVV codes at any point — that information is entered directly on JazzCash&apos;s page, not ours.
             </p>
           </Card>

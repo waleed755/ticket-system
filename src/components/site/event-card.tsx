@@ -58,7 +58,7 @@ export default function EventCard({ data }: { data: EventCardData }) {
         <div className="flex items-center justify-between pt-3 border-t border-gray-100">
           <span className="font-bold text-gray-900">{data.isFree ? "Free" : `From ${formatMoney(data.lowestPrice)}`}</span>
           <span className={`text-sm font-semibold ${bookable ? "text-brand" : "text-gray-400"}`}>
-            {bookable ? "Book Tickets →" : "View Event →"}
+            {bookable ? "Get Tickets →" : "View Event →"}
           </span>
         </div>
       </div>

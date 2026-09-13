@@ -1,5 +1,7 @@
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { PDFDocument, rgb, StandardFonts, type PDFFont, type PDFImage, type PDFPage } from "pdf-lib";
 import QRCode from "qrcode";
+import fs from "fs";
+import path from "path";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
 import { formatMoney } from "./money";
@@ -8,18 +10,34 @@ import { formatEventDateTime } from "./format";
 const PAGE_W = 612;
 const PAGE_H = 300;
 
+const INK = rgb(0.043, 0.075, 0.188); // #0b1330
+const ACCENT = rgb(0.941, 0.067, 0.31); // #f0114f
+
+let cachedLogoBytes: Buffer | null = null;
+function getLogoBytes(): Buffer {
+  if (!cachedLogoBytes) {
+    cachedLogoBytes = fs.readFileSync(path.join(process.cwd(), "public", "icon.png"));
+  }
+  return cachedLogoBytes;
+}
+
 type TicketForPdf = Prisma.TicketGetPayload<{
   include: { attendee: true; event: true; ticketCategory: true; booking: true };
 }>;
 
-async function drawTicket(doc: PDFDocument, ticket: TicketForPdf) {
+async function drawHeaderBand(page: PDFPage, logo: PDFImage, bold: PDFFont, width: number, height: number) {
+  page.drawRectangle({ x: 0, y: height - 60, width, height: 60, color: INK });
+  const logoSize = 34;
+  page.drawImage(logo, { x: 20, y: height - 47, width: logoSize, height: logoSize });
+  page.drawText("TICKET BUDDY", { x: 20 + logoSize + 10, y: height - 38, size: 15, font: bold, color: rgb(1, 1, 1) });
+}
+
+async function drawTicket(doc: PDFDocument, ticket: TicketForPdf, logo: PDFImage) {
   const page = doc.addPage([PAGE_W, PAGE_H]);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
   const regular = await doc.embedFont(StandardFonts.Helvetica);
 
-  // Header band
-  page.drawRectangle({ x: 0, y: PAGE_H - 60, width: PAGE_W, height: 60, color: rgb(0.31, 0.27, 0.9) });
-  page.drawText("TICKETBUDDY.PK", { x: 24, y: PAGE_H - 38, size: 16, font: bold, color: rgb(1, 1, 1) });
+  await drawHeaderBand(page, logo, bold, PAGE_W, PAGE_H);
   page.drawText(ticket.status === "CHECKED_IN" ? "CHECKED IN" : ticket.status, {
     x: PAGE_W - 150,
     y: PAGE_H - 38,
@@ -29,7 +47,7 @@ async function drawTicket(doc: PDFDocument, ticket: TicketForPdf) {
   });
 
   let y = PAGE_H - 90;
-  page.drawText(ticket.event.name, { x: 24, y, size: 18, font: bold, color: rgb(0.07, 0.09, 0.15) });
+  page.drawText(ticket.event.name, { x: 24, y, size: 18, font: bold, color: INK });
   y -= 22;
   page.drawText(formatEventDateTime(ticket.event.startAt, ticket.event.timezone), { x: 24, y, size: 11, font: regular, color: rgb(0.3, 0.3, 0.35) });
   y -= 16;
@@ -41,9 +59,9 @@ async function drawTicket(doc: PDFDocument, ticket: TicketForPdf) {
   page.drawText("TICKET TYPE", { x: 220, y, size: 9, font: bold, color: rgb(0.5, 0.5, 0.55) });
   page.drawText("PRICE", { x: 380, y, size: 9, font: bold, color: rgb(0.5, 0.5, 0.55) });
   y -= 16;
-  page.drawText(ticket.attendee.fullName, { x: 24, y, size: 13, font: bold, color: rgb(0.07, 0.09, 0.15) });
-  page.drawText(ticket.ticketCategory.name, { x: 220, y, size: 13, font: regular, color: rgb(0.07, 0.09, 0.15) });
-  page.drawText(formatMoney(ticket.price, ticket.booking.currency), { x: 380, y, size: 13, font: regular, color: rgb(0.07, 0.09, 0.15) });
+  page.drawText(ticket.attendee.fullName, { x: 24, y, size: 13, font: bold, color: INK });
+  page.drawText(ticket.ticketCategory.name, { x: 220, y, size: 13, font: regular, color: INK });
+  page.drawText(formatMoney(ticket.price, ticket.booking.currency), { x: 380, y, size: 13, font: regular, color: INK });
 
   y -= 34;
   page.drawText(`Ticket #: ${ticket.ticketNumber}`, { x: 24, y, size: 10, font: regular, color: rgb(0.4, 0.4, 0.45) });
@@ -70,7 +88,7 @@ async function drawTicket(doc: PDFDocument, ticket: TicketForPdf) {
     start: { x: PAGE_W - 190, y: 10 },
     end: { x: PAGE_W - 190, y: PAGE_H - 70 },
     dashArray: [4, 4],
-    color: rgb(0.85, 0.85, 0.88),
+    color: ACCENT,
   });
 }
 
@@ -80,7 +98,8 @@ export async function generateTicketPdf(ticketId: string): Promise<Uint8Array> {
     include: { attendee: true, event: true, ticketCategory: true, booking: true },
   });
   const doc = await PDFDocument.create();
-  await drawTicket(doc, ticket);
+  const logo = await doc.embedPng(getLogoBytes());
+  await drawTicket(doc, ticket, logo);
   return doc.save();
 }
 
@@ -91,8 +110,9 @@ export async function generateBookingTicketsPdf(bookingId: string): Promise<Uint
     orderBy: { createdAt: "asc" },
   });
   const doc = await PDFDocument.create();
+  const logo = await doc.embedPng(getLogoBytes());
   for (const ticket of tickets) {
-    await drawTicket(doc, ticket);
+    await drawTicket(doc, ticket, logo);
   }
   return doc.save();
 }
@@ -106,13 +126,16 @@ export async function generateReceiptPdf(bookingId: string): Promise<Uint8Array>
   const page = doc.addPage([612, 792]);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
   const regular = await doc.embedFont(StandardFonts.Helvetica);
+  const logo = await doc.embedPng(getLogoBytes());
 
-  let y = 740;
-  page.drawText("TICKETBUDDY.PK", { x: 48, y, size: 20, font: bold, color: rgb(0.31, 0.27, 0.9) });
+  const logoSize = 30;
+  page.drawImage(logo, { x: 48, y: 750, width: logoSize, height: logoSize });
+  let y = 758;
+  page.drawText("TICKET BUDDY", { x: 48 + logoSize + 10, y, size: 16, font: bold, color: INK });
   y -= 18;
-  page.drawText("Payment Receipt", { x: 48, y, size: 12, font: regular, color: rgb(0.4, 0.4, 0.45) });
+  page.drawText("Payment Receipt", { x: 48 + logoSize + 10, y, size: 11, font: regular, color: rgb(0.4, 0.4, 0.45) });
 
-  y -= 40;
+  y = 700;
   page.drawText(`Booking Number: ${booking.bookingNumber}`, { x: 48, y, size: 11, font: regular });
   y -= 16;
   page.drawText(`Event: ${booking.event.name}`, { x: 48, y, size: 11, font: regular });
