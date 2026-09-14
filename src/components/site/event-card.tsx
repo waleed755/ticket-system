@@ -18,6 +18,7 @@ export interface EventCardData {
   venueName: string | null;
   city: string | null;
   lowestPrice: number;
+  lowestCompareAtPrice: number | null;
   isFree: boolean;
   displayStatus: DisplayStatus;
   categoryName: string;
@@ -56,7 +57,18 @@ export default function EventCard({ data }: { data: EventCardData }) {
         </p>
         <p className="text-sm text-gray-600 line-clamp-2 mb-3 flex-1">{data.shortDescription}</p>
         <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-          <span className="font-bold text-gray-900">{data.isFree ? "Free" : `From ${formatMoney(data.lowestPrice)}`}</span>
+          <span className="font-bold text-gray-900">
+            {data.isFree ? (
+              "Free"
+            ) : data.lowestCompareAtPrice ? (
+              <>
+                From <span className="line-through text-gray-400 font-normal">{formatMoney(data.lowestCompareAtPrice)}</span>{" "}
+                <span className="text-brand-pink">{formatMoney(data.lowestPrice)}</span>
+              </>
+            ) : (
+              `From ${formatMoney(data.lowestPrice)}`
+            )}
+          </span>
           <span className={`text-sm font-semibold ${bookable ? "text-brand" : "text-gray-400"}`}>
             {bookable ? "Get Tickets →" : "View Event →"}
           </span>

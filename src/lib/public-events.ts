@@ -53,7 +53,11 @@ export async function listPublishedEvents(filters: EventFilters) {
 
   let mapped = events.map((event) => {
     const visibleCategories = event.ticketCategories.filter((c) => c.visible);
-    const lowestPrice = visibleCategories.length ? Math.min(...visibleCategories.map((c) => c.price)) : 0;
+    const cheapest = visibleCategories.length
+      ? visibleCategories.reduce((min, c) => (c.price < min.price ? c : min))
+      : null;
+    const lowestPrice = cheapest?.price ?? 0;
+    const lowestCompareAtPrice = cheapest?.compareAtPrice && cheapest.compareAtPrice > cheapest.price ? cheapest.compareAtPrice : null;
     const isFree = visibleCategories.length > 0 && visibleCategories.every((c) => c.price === 0);
     const capacityRemaining = Math.max(0, event.capacity - event._count.tickets);
     const displayStatus = computeDisplayStatus({
@@ -64,7 +68,7 @@ export async function listPublishedEvents(filters: EventFilters) {
       capacityRemaining,
       capacity: event.capacity,
     });
-    return { event, lowestPrice, isFree, capacityRemaining, displayStatus, ticketsSold: event._count.tickets };
+    return { event, lowestPrice, lowestCompareAtPrice, isFree, capacityRemaining, displayStatus, ticketsSold: event._count.tickets };
   });
 
   if (filters.priceType === "FREE") mapped = mapped.filter((m) => m.isFree);

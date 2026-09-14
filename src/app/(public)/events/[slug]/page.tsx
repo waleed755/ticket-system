@@ -39,7 +39,12 @@ export default async function EventDetailPage({
   );
 
   const refundDeadline = computeRefundDeadline(event.startAt, event.refundDeadlineHours);
-  const lowestPrice = event.ticketCategories.length ? Math.min(...event.ticketCategories.map((c) => c.price)) : 0;
+  const cheapestCategory = event.ticketCategories.length
+    ? event.ticketCategories.reduce((min, c) => (c.price < min.price ? c : min))
+    : null;
+  const lowestPrice = cheapestCategory?.price ?? 0;
+  const lowestCompareAtPrice =
+    cheapestCategory?.compareAtPrice && cheapestCategory.compareAtPrice > cheapestCategory.price ? cheapestCategory.compareAtPrice : null;
   const allFree = event.ticketCategories.length > 0 && event.ticketCategories.every((c) => c.price === 0);
 
   return (
@@ -200,7 +205,18 @@ export default async function EventDetailPage({
         <div>
           <Card className="p-6 sticky top-24">
             <p className="text-sm text-gray-500 mb-1">{allFree ? "Free event" : "Starting from"}</p>
-            <p className="text-3xl font-bold text-gray-900 mb-4">{allFree ? "Free" : formatMoney(lowestPrice)}</p>
+            <p className="text-3xl font-bold text-gray-900 mb-4">
+              {allFree ? (
+                "Free"
+              ) : lowestCompareAtPrice ? (
+                <>
+                  <span className="line-through text-gray-400 text-xl align-middle mr-2">{formatMoney(lowestCompareAtPrice)}</span>
+                  <span className="text-brand-pink">{formatMoney(lowestPrice)}</span>
+                </>
+              ) : (
+                formatMoney(lowestPrice)
+              )}
+            </p>
 
             <div className="space-y-3 mb-5">
               {event.ticketCategories.filter((c) => c.visible).map((cat) => {
@@ -211,7 +227,18 @@ export default async function EventDetailPage({
                       <p className="font-medium text-gray-900">{cat.name}</p>
                       <p className="text-xs text-gray-500">{categoryStatusLabel(cat.status, avail.remaining)}</p>
                     </div>
-                    <p className="font-semibold text-gray-900">{cat.price === 0 ? "Free" : formatMoney(cat.price)}</p>
+                    <p className="font-semibold text-gray-900 text-right">
+                      {cat.price === 0 ? (
+                        "Free"
+                      ) : cat.compareAtPrice && cat.compareAtPrice > cat.price ? (
+                        <>
+                          <span className="block text-xs text-gray-400 line-through font-normal">{formatMoney(cat.compareAtPrice)}</span>
+                          <span className="text-brand-pink">{formatMoney(cat.price)}</span>
+                        </>
+                      ) : (
+                        formatMoney(cat.price)
+                      )}
+                    </p>
                   </div>
                 );
               })}
@@ -240,7 +267,9 @@ export default async function EventDetailPage({
           <div className="grid sm:grid-cols-3 gap-6">
             {related.map((r) => {
               const cats = r.ticketCategories.filter((c) => c.visible);
-              const low = cats.length ? Math.min(...cats.map((c) => c.price)) : 0;
+              const cheapest = cats.length ? cats.reduce((min, c) => (c.price < min.price ? c : min)) : null;
+              const low = cheapest?.price ?? 0;
+              const lowCompareAt = cheapest?.compareAtPrice && cheapest.compareAtPrice > cheapest.price ? cheapest.compareAtPrice : null;
               const free = cats.length > 0 && cats.every((c) => c.price === 0);
               return (
                 <EventCard
@@ -258,6 +287,7 @@ export default async function EventDetailPage({
                     venueName: r.venueName,
                     city: r.city,
                     lowestPrice: low,
+                    lowestCompareAtPrice: lowCompareAt,
                     isFree: free,
                     displayStatus: "BOOKING_OPEN",
                     categoryName: r.category.name,

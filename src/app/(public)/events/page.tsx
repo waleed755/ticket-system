@@ -101,6 +101,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
                 venueName: m.event.venueName,
                 city: m.event.city,
                 lowestPrice: m.lowestPrice,
+                lowestCompareAtPrice: m.lowestCompareAtPrice,
                 isFree: m.isFree,
                 displayStatus: m.displayStatus,
                 categoryName: m.event.category.name,

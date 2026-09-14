@@ -12,6 +12,7 @@ interface Category {
   name: string;
   description: string | null;
   price: number;
+  compareAtPrice: number | null;
   currency: string;
   minPerOrder: number;
   maxPerOrder: number;
@@ -193,7 +194,18 @@ export default function BookingWizard({ event, categories, questions }: { event:
                           </div>
                           {c.description && <p className="text-sm text-gray-500 mt-0.5">{c.description}</p>}
                           {c.benefits && <p className="text-xs text-gray-400 mt-0.5">{c.benefits}</p>}
-                          <p className="text-sm font-semibold text-gray-900 mt-1">{c.price === 0 ? "Free" : formatMoney(c.price, c.currency)}</p>
+                          <p className="text-sm font-semibold text-gray-900 mt-1">
+                            {c.price === 0 ? (
+                              "Free"
+                            ) : c.compareAtPrice && c.compareAtPrice > c.price ? (
+                              <>
+                                <span className="line-through text-gray-400 font-normal mr-1">{formatMoney(c.compareAtPrice, c.currency)}</span>
+                                <span className="text-brand-pink">{formatMoney(c.price, c.currency)}</span>
+                              </>
+                            ) : (
+                              formatMoney(c.price, c.currency)
+                            )}
+                          </p>
                           <p className="text-xs text-gray-400">Limit {c.minPerOrder}–{c.maxPerOrder} per order</p>
                         </div>
                         <div className="flex items-center gap-2">

@@ -40,6 +40,7 @@ export default async function BookEventPage({
           name: c.name,
           description: c.description,
           price: c.price,
+          compareAtPrice: c.compareAtPrice,
           currency: c.currency,
           minPerOrder: c.minPerOrder,
           maxPerOrder: c.maxPerOrder,

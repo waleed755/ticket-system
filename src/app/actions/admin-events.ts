@@ -70,6 +70,7 @@ export interface EventFormInput {
     name: string;
     description: string;
     price: number;
+    compareAtPrice: number | null;
     totalQuantity: number;
     minPerOrder: number;
     maxPerOrder: number;
@@ -139,6 +140,7 @@ export async function createEventAction(input: EventFormInput) {
           name: c.name,
           description: c.description,
           price: c.price,
+          compareAtPrice: c.compareAtPrice,
           totalQuantity: c.totalQuantity,
           minPerOrder: c.minPerOrder,
           maxPerOrder: c.maxPerOrder,
@@ -167,6 +169,7 @@ export async function createEventAction(input: EventFormInput) {
 export async function updateEventAction(eventId: string, input: EventFormInput) {
   const session = await requireRole(["ADMIN", "EVENT_MANAGER"]);
   const before = await prisma.event.findUniqueOrThrow({ where: { id: eventId } });
+  const hiddenCategories: string[] = [];
 
   await prisma.$transaction(async (tx) => {
     await tx.event.update({
@@ -225,10 +228,24 @@ export async function updateEventAction(eventId: string, input: EventFormInput) 
       data: input.questions.map((q, i) => ({ eventId, label: q.label, type: q.type as never, options: q.options || null, required: q.required, position: i })),
     });
 
-    const existingIds = (await tx.ticketCategory.findMany({ where: { eventId }, select: { id: true } })).map((c) => c.id);
+    const existingCategories = await tx.ticketCategory.findMany({ where: { eventId }, select: { id: true, name: true } });
     const keepIds = input.ticketCategories.filter((c) => c.id).map((c) => c.id as string);
-    const removeIds = existingIds.filter((id) => !keepIds.includes(id));
-    if (removeIds.length) await tx.ticketCategory.deleteMany({ where: { id: { in: removeIds } } });
+    const toRemove = existingCategories.filter((c) => !keepIds.includes(c.id));
+
+    for (const category of toRemove) {
+      const hasHistory =
+        (await tx.attendee.count({ where: { ticketCategoryId: category.id } })) > 0 ||
+        (await tx.waitlistEntry.count({ where: { ticketCategoryId: category.id } })) > 0;
+      if (hasHistory) {
+        // Existing bookings/tickets/waitlist entries reference this category
+        // (a required FK), so it can't be deleted without corrupting that
+        // history — hide it from sale instead of losing the admin's edit.
+        await tx.ticketCategory.update({ where: { id: category.id }, data: { visible: false, status: "CLOSED" } });
+        hiddenCategories.push(category.name);
+      } else {
+        await tx.ticketCategory.delete({ where: { id: category.id } });
+      }
+    }
 
     for (const [i, c] of input.ticketCategories.entries()) {
       if (c.id) {
@@ -238,6 +255,7 @@ export async function updateEventAction(eventId: string, input: EventFormInput) 
             name: c.name,
             description: c.description,
             price: c.price,
+            compareAtPrice: c.compareAtPrice,
             totalQuantity: c.totalQuantity,
             minPerOrder: c.minPerOrder,
             maxPerOrder: c.maxPerOrder,
@@ -253,6 +271,7 @@ export async function updateEventAction(eventId: string, input: EventFormInput) 
             name: c.name,
             description: c.description,
             price: c.price,
+            compareAtPrice: c.compareAtPrice,
             totalQuantity: c.totalQuantity,
             minPerOrder: c.minPerOrder,
             maxPerOrder: c.maxPerOrder,
@@ -278,7 +297,7 @@ export async function updateEventAction(eventId: string, input: EventFormInput) 
 
   revalidatePath("/admin/events");
   revalidatePath(`/admin/events/${eventId}/edit`);
-  return { ok: true as const };
+  return { ok: true as const, hiddenCategories };
 }
 
 async function setEventStatus(eventId: string, status: string, action: string, description: string) {
@@ -469,6 +488,7 @@ export async function duplicateEventAction(eventId: string) {
           name: c.name,
           description: c.description,
           price: c.price,
+          compareAtPrice: c.compareAtPrice,
           totalQuantity: c.totalQuantity,
           minPerOrder: c.minPerOrder,
           maxPerOrder: c.maxPerOrder,

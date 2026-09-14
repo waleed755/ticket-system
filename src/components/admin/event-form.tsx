@@ -74,6 +74,7 @@ export default function EventForm({
     ticketCategories: initial?.ticketCategories ?? [],
   });
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function update<K extends keyof EventFormInput>(key: K, value: EventFormInput[K]) {
@@ -82,6 +83,7 @@ export default function EventForm({
 
   function submit() {
     setError(null);
+    setNotice(null);
     const payload = { ...form };
     startTransition(async () => {
       if (eventId) {
@@ -89,6 +91,11 @@ export default function EventForm({
         if (!result.ok) {
           setError("Something went wrong.");
           return;
+        }
+        if (result.hiddenCategories.length > 0) {
+          setNotice(
+            `${result.hiddenCategories.join(", ")} ${result.hiddenCategories.length === 1 ? "has" : "have"} existing bookings and can't be deleted — hidden from sale instead.`
+          );
         }
         router.push(`/admin/events/${eventId}/edit`);
       } else {
@@ -106,6 +113,7 @@ export default function EventForm({
   return (
     <div className="space-y-6">
       {error && <Alert variant="error">{error}</Alert>}
+      {notice && <Alert variant="warning">{notice}</Alert>}
 
       <Card className="p-6 space-y-4">
         <h2 className="font-semibold text-gray-900">Basics</h2>
@@ -221,6 +229,19 @@ export default function EventForm({
               />
               <Input
                 type="number"
+                placeholder="Compare-at price (optional)"
+                value={c.compareAtPrice ? c.compareAtPrice / 100 : ""}
+                onChange={(e) =>
+                  update(
+                    "ticketCategories",
+                    form.ticketCategories.map((x, idx) =>
+                      idx === i ? { ...x, compareAtPrice: e.target.value === "" ? null : Math.round(Number(e.target.value) * 100) } : x
+                    )
+                  )
+                }
+              />
+              <Input
+                type="number"
                 placeholder="Total quantity"
                 value={c.totalQuantity}
                 onChange={(e) => update("ticketCategories", form.ticketCategories.map((x, idx) => (idx === i ? { ...x, totalQuantity: Number(e.target.value) } : x)))}
@@ -248,7 +269,19 @@ export default function EventForm({
             </div>
             <Input placeholder="Description" value={c.description} onChange={(e) => update("ticketCategories", form.ticketCategories.map((x, idx) => (idx === i ? { ...x, description: e.target.value } : x)))} />
             <Input placeholder="Benefits" value={c.benefits} onChange={(e) => update("ticketCategories", form.ticketCategories.map((x, idx) => (idx === i ? { ...x, benefits: e.target.value } : x)))} />
-            <p className="text-xs text-gray-400">Price preview: {formatMoney(c.price || 0)}</p>
+            <p className="text-xs text-gray-400">
+              Price preview:{" "}
+              {c.compareAtPrice && c.compareAtPrice > c.price ? (
+                <>
+                  <span className="line-through">{formatMoney(c.compareAtPrice)}</span> {formatMoney(c.price || 0)}{" "}
+                  <span className="text-green-600 font-semibold">
+                    ({Math.round(((c.compareAtPrice - c.price) / c.compareAtPrice) * 100)}% off)
+                  </span>
+                </>
+              ) : (
+                formatMoney(c.price || 0)
+              )}
+            </p>
           </div>
         ))}
         <Button
@@ -258,7 +291,7 @@ export default function EventForm({
           onClick={() =>
             update("ticketCategories", [
               ...form.ticketCategories,
-              { name: "", description: "", price: 0, totalQuantity: 100, minPerOrder: 1, maxPerOrder: 10, refundEligible: true, benefits: "" },
+              { name: "", description: "", price: 0, compareAtPrice: null, totalQuantity: 100, minPerOrder: 1, maxPerOrder: 10, refundEligible: true, benefits: "" },
             ])
           }
         >

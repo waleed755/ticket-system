@@ -346,6 +346,7 @@ model TicketCategory {
   name           String
   description    String?
   price          Int
+  compareAtPrice Int?
   currency       String                @default("PKR")
   totalQuantity  Int
   quantitySold   Int                   @default(0)

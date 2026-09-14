@@ -51,6 +51,7 @@ export default async function EditEventPage({ params }: { params: Promise<{ id: 
             name: c.name,
             description: c.description ?? "",
             price: c.price,
+            compareAtPrice: c.compareAtPrice,
             totalQuantity: c.totalQuantity,
             minPerOrder: c.minPerOrder,
             maxPerOrder: c.maxPerOrder,
