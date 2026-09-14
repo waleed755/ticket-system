@@ -22,8 +22,8 @@ export default function HowItWorksPage() {
             {[
               { step: "1", title: "Browse & select", body: "Customers browse live events on our website — for example, Actual Wala Live's concerts — and view full details: date, time, venue, ticket categories, and pricing in PKR." },
               { step: "2", title: "Add attendee details", body: "The customer chooses one or more ticket categories (e.g. VIP, Family & Ladies, Stags/Single Male), enters buyer and attendee details, and applies a discount code if eligible." },
-              { step: "3", title: "Pay securely", body: "At checkout, the customer pays the total amount using JazzCash — either their JazzCash mobile wallet or a linked debit/credit card via JazzCash's Hosted Checkout. No card or wallet details are ever stored on our servers." },
-              { step: "4", title: "Receive tickets instantly", body: "Once JazzCash confirms payment, a unique digital ticket (with a scannable QR code) is generated per attendee and emailed immediately. Tickets are also always available for download from the customer's account." },
+              { step: "3", title: "Pay & upload proof", body: "At checkout, the customer pays the total amount by bank transfer or QR code using the account details shown, then uploads a screenshot of the payment as proof. No card or bank credentials are ever entered on our site." },
+              { step: "4", title: "Get tickets once verified", body: "Our team manually verifies each payment against the amount and account shown. Once approved, a unique digital ticket (with a scannable QR code) is generated per attendee and emailed immediately, and is also always available for download from the customer's account." },
             ].map((s) => (
               <Card key={s.step} className="p-5">
                 <div className="h-9 w-9 rounded-full bg-brand text-white font-bold flex items-center justify-center mb-3">{s.step}</div>
@@ -35,17 +35,22 @@ export default function HowItWorksPage() {
         </section>
 
         <section className="mb-12">
-          <h2 className="text-xl font-bold text-gray-900 mb-3">How payment works (JazzCash)</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-3">How payment works</h2>
           <Card className="p-6">
             <p className="text-sm text-gray-700 mb-3">
-              JazzCash is our payment gateway for all ticket purchases. When a customer clicks &quot;Pay,&quot; they are redirected to
-              JazzCash&apos;s secure hosted payment page, where they authenticate and approve the payment using their own JazzCash
-              wallet PIN or card credentials. JazzCash then confirms the transaction back to Ticket Buddy, and the booking is
-              marked as paid — this happens automatically, with no manual step required from our side.
+              Ticket Buddy uses a manual, verified payment process for all ticket purchases. At checkout, the customer sees
+              our payment account details and a QR code, and transfers the total amount directly using their own banking or
+              mobile wallet app. They then upload a screenshot of the completed payment as proof.
+            </p>
+            <p className="text-sm text-gray-700 mb-3">
+              The booking is held as &quot;Payment Verification Pending&quot; while our team checks the uploaded proof against
+              the amount and account shown. Once approved, the booking is confirmed and the customer&apos;s tickets are
+              emailed immediately — this is the only point at which a ticket becomes valid.
             </p>
             <p className="text-sm text-gray-700">
-              All prices on Ticket Buddy are displayed and charged in Pakistani Rupees (PKR). We do not store card numbers,
-              wallet PINs, or CVV codes at any point — that information is entered directly on JazzCash&apos;s page, not ours.
+              All prices on Ticket Buddy are displayed and charged in Pakistani Rupees (PKR). We do not collect or store card
+              numbers, bank credentials, or wallet PINs at any point — only the payment screenshot the customer chooses to
+              upload as proof.
             </p>
           </Card>
         </section>

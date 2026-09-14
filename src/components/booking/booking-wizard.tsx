@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Container, Card, Button, Input, Label, Select, Alert, Badge } from "@/components/ui";
 import { formatMoney } from "@/lib/money";
 import { createBookingAction, checkDiscountCodeAction } from "@/app/actions/booking";
+import CheckoutSteps from "./checkout-steps";
 
 interface Category {
   id: string;
@@ -50,8 +51,6 @@ interface AttendeeForm {
   customAnswers: Record<string, string>;
 }
 
-const STEPS = ["Tickets", "Your details", "Attendees", "Review & pay"] as const;
-
 export default function BookingWizard({ event, categories, questions }: { event: EventInfo; categories: Category[]; questions: Question[] }) {
   const router = useRouter();
   const [step, setStep] = useState(0);
@@ -81,7 +80,7 @@ export default function BookingWizard({ event, categories, questions }: { event:
     setQuantities((q) => ({ ...q, [categoryId]: Math.max(0, qty) }));
   }
 
-  function goToAttendeesStep() {
+  function goToDetailsStep() {
     // (Re)build attendee forms to match selected quantities, preserving any already-entered data.
     const next: AttendeeForm[] = [];
     for (const { category, qty } of selectedItems) {
@@ -105,7 +104,7 @@ export default function BookingWizard({ event, categories, questions }: { event:
       }
     }
     setAttendees(next);
-    setStep(2);
+    setStep(1);
   }
 
   function updateAttendee(index: number, patch: Partial<AttendeeForm>) {
@@ -131,7 +130,7 @@ export default function BookingWizard({ event, categories, questions }: { event:
     setDiscountChecking(false);
   }
 
-  async function submitBooking() {
+  async function reviewOrder() {
     setSubmitting(true);
     setError(null);
     const result = await createBookingAction({
@@ -163,6 +162,8 @@ export default function BookingWizard({ event, categories, questions }: { event:
     router.push(`/checkout/${result.bookingId}/pay`);
   }
 
+  const detailsComplete = !!buyerName && !!buyerEmail && !!buyerPhone && attendees.every((a) => a.fullName) && termsAccepted;
+
   return (
     <Container className="py-10">
       <div className="mb-8">
@@ -170,17 +171,7 @@ export default function BookingWizard({ event, categories, questions }: { event:
         <h1 className="text-2xl font-bold text-gray-900">{event.name}</h1>
       </div>
 
-      <div className="flex items-center gap-2 mb-8 text-sm font-medium">
-        {STEPS.map((label, i) => (
-          <div key={label} className="flex items-center gap-2">
-            <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs ${i <= step ? "bg-brand text-white" : "bg-gray-200 text-gray-500"}`}>
-              {i + 1}
-            </div>
-            <span className={i <= step ? "text-gray-900" : "text-gray-400"}>{label}</span>
-            {i < STEPS.length - 1 && <span className="w-6 h-px bg-gray-300 mx-1" />}
-          </div>
-        ))}
-      </div>
+      <CheckoutSteps current={step === 0 ? 1 : 2} />
 
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
@@ -199,12 +190,11 @@ export default function BookingWizard({ event, categories, questions }: { event:
                           <div className="flex items-center gap-2">
                             <p className="font-semibold text-gray-900">{c.name}</p>
                             {soldOut && <Badge color="red">Sold out</Badge>}
-                            {!soldOut && c.remaining <= 10 && <Badge color="amber">Almost sold out</Badge>}
                           </div>
                           {c.description && <p className="text-sm text-gray-500 mt-0.5">{c.description}</p>}
                           {c.benefits && <p className="text-xs text-gray-400 mt-0.5">{c.benefits}</p>}
                           <p className="text-sm font-semibold text-gray-900 mt-1">{c.price === 0 ? "Free" : formatMoney(c.price, c.currency)}</p>
-                          <p className="text-xs text-gray-400">Limit {c.minPerOrder}–{c.maxPerOrder} per order · {c.remaining} remaining</p>
+                          <p className="text-xs text-gray-400">Limit {c.minPerOrder}–{c.maxPerOrder} per order</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <button
@@ -230,7 +220,7 @@ export default function BookingWizard({ event, categories, questions }: { event:
                   })}
                 </div>
                 <div className="mt-6 flex justify-end">
-                  <Button disabled={totalTickets === 0} onClick={() => setStep(1)}>
+                  <Button disabled={totalTickets === 0} onClick={goToDetailsStep}>
                     Continue ({totalTickets} ticket{totalTickets === 1 ? "" : "s"})
                   </Button>
                 </div>
@@ -239,9 +229,9 @@ export default function BookingWizard({ event, categories, questions }: { event:
 
             {step === 1 && (
               <div>
-                <h2 className="font-bold text-gray-900 mb-4">Buyer contact information</h2>
+                <h2 className="font-bold text-gray-900 mb-1">Customer & booking details</h2>
                 <p className="text-sm text-gray-500 mb-4">We&apos;ll send your booking confirmation and tickets to this email address.</p>
-                <div className="space-y-4">
+                <div className="space-y-4 mb-8">
                   <div>
                     <Label htmlFor="buyerName">Full name</Label>
                     <Input id="buyerName" value={buyerName} onChange={(e) => setBuyerName(e.target.value)} required />
@@ -255,20 +245,10 @@ export default function BookingWizard({ event, categories, questions }: { event:
                     <Input id="buyerPhone" type="tel" value={buyerPhone} onChange={(e) => setBuyerPhone(e.target.value)} required />
                   </div>
                 </div>
-                <div className="mt-6 flex justify-between">
-                  <Button variant="secondary" onClick={() => setStep(0)}>Back</Button>
-                  <Button disabled={!buyerName || !buyerEmail || !buyerPhone} onClick={goToAttendeesStep}>
-                    Continue to attendees
-                  </Button>
-                </div>
-              </div>
-            )}
 
-            {step === 2 && (
-              <div>
-                <h2 className="font-bold text-gray-900 mb-1">Attendee details</h2>
+                <h3 className="font-bold text-gray-900 mb-1">Attendee details</h3>
                 <p className="text-sm text-gray-500 mb-4">Enter details for each of the {attendees.length} attendee(s) on this booking.</p>
-                <div className="space-y-6">
+                <div className="space-y-6 mb-8">
                   {attendees.map((a, idx) => {
                     const category = categories.find((c) => c.id === a.ticketCategoryId)!;
                     return (
@@ -336,18 +316,8 @@ export default function BookingWizard({ event, categories, questions }: { event:
                     );
                   })}
                 </div>
-                <div className="mt-6 flex justify-between">
-                  <Button variant="secondary" onClick={() => setStep(1)}>Back</Button>
-                  <Button disabled={attendees.some((a) => !a.fullName)} onClick={() => setStep(3)}>
-                    Review order
-                  </Button>
-                </div>
-              </div>
-            )}
 
-            {step === 3 && (
-              <div>
-                <h2 className="font-bold text-gray-900 mb-4">Review your order</h2>
+                <h3 className="font-bold text-gray-900 mb-3">Order summary</h3>
                 <div className="space-y-2 mb-5">
                   {attendees.map((a, idx) => {
                     const category = categories.find((c) => c.id === a.ticketCategoryId)!;
@@ -393,9 +363,9 @@ export default function BookingWizard({ event, categories, questions }: { event:
                 </label>
 
                 <div className="mt-6 flex justify-between">
-                  <Button variant="secondary" onClick={() => setStep(2)}>Back</Button>
-                  <Button disabled={!termsAccepted || submitting} onClick={submitBooking}>
-                    {submitting ? "Processing..." : total === 0 ? "Confirm free booking" : "Continue to payment"}
+                  <Button variant="secondary" onClick={() => setStep(0)}>Back</Button>
+                  <Button disabled={!detailsComplete || submitting} onClick={reviewOrder}>
+                    {submitting ? "Processing..." : "Review Order"}
                   </Button>
                 </div>
               </div>

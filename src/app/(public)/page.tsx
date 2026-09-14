@@ -104,8 +104,8 @@ export default async function HomePage() {
             <div className="flex items-center gap-2">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>
               <div>
-                <p className="text-sm font-semibold leading-tight">Book Securely</p>
-                <p className="text-xs text-white/60 leading-tight">via JazzCash</p>
+                <p className="text-sm font-semibold leading-tight">Book Easily</p>
+                <p className="text-xs text-white/60 leading-tight">Simple & Secure</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -273,7 +273,7 @@ export default async function HomePage() {
         <div className="grid sm:grid-cols-3 gap-8 max-w-3xl mx-auto">
           {[
             { title: "Find It.", body: "Discover what's happening." },
-            { title: "Book It.", body: "Get your ticket online — pay securely via JazzCash." },
+            { title: "Book It.", body: "Get your ticket online with a simple and secure booking process." },
             { title: "Be There.", body: "Show your ticket and enjoy." },
           ].map((s, i) => (
             <Reveal key={s.title} delay={i * 100} className="text-center">

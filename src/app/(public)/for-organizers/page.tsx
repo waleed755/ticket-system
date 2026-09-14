@@ -8,7 +8,7 @@ export const metadata = {
 
 const BENEFITS = [
   { title: "Sell tickets online", body: "List your event with full details — ticket categories, pricing in PKR, early-bird tiers, and capacity limits." },
-  { title: "Get paid via JazzCash", body: "Customers pay securely through JazzCash; payments are tracked and reconciled automatically." },
+  { title: "Get paid easily", body: "Customers pay by bank transfer or QR code and upload proof of payment; our team verifies each one before it's confirmed." },
   { title: "Manage check-in on the day", body: "A mobile-friendly check-in portal for your staff — scan or search, no spreadsheets." },
   { title: "Reach a ready audience", body: "Your event appears alongside others on Ticket Buddy's homepage and events listing." },
 ];

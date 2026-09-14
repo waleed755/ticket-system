@@ -9,8 +9,8 @@ export default async function AboutPage() {
       <div className="prose-body text-gray-700 whitespace-pre-line">{page?.content}</div>
       <div className="grid sm:grid-cols-3 gap-4 mt-10">
         {[
-          { title: "Secure JazzCash payments", body: "Every transaction is processed through JazzCash's hosted checkout." },
-          { title: "Instant digital tickets", body: "Unique, scannable tickets delivered by email the moment payment clears." },
+          { title: "Simple, secure payments", body: "Pay by bank transfer or QR code and upload proof of payment — verified by our team before your booking is confirmed." },
+          { title: "Instant digital tickets", body: "Unique, scannable tickets delivered by email the moment payment is verified." },
           { title: "PKR pricing", body: "All events, all ticket categories — priced clearly in Pakistani Rupees." },
         ].map((s) => (
           <Card key={s.title} className="p-5">

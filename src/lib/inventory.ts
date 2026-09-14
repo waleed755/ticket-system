@@ -1,6 +1,12 @@
 import { prisma } from "./prisma";
 
-export const RESERVATION_HOLD_MINUTES = 12;
+// Manual bank-transfer payments take longer to complete than an instant
+// card/wallet charge, so the initial hold window is generous enough to let a
+// customer make the transfer and upload a screenshot before it expires. Once
+// a screenshot is submitted the booking moves to PAYMENT_VERIFICATION_PENDING
+// and is held indefinitely (see the held-count queries below) until an admin
+// approves or rejects it — no time pressure during manual review.
+export const RESERVATION_HOLD_MINUTES = 30;
 
 // Flips any expired pending-payment bookings to EXPIRED, releasing their
 // held inventory. Cheap enough to call on every availability check / booking
@@ -25,7 +31,12 @@ export async function getCategoryAvailability(ticketCategoryId: string) {
   const held = await prisma.attendee.count({
     where: {
       ticketCategoryId,
-      booking: { status: "PENDING_PAYMENT", reservationExpiresAt: { gt: new Date() } },
+      booking: {
+        OR: [
+          { status: "PENDING_PAYMENT", reservationExpiresAt: { gt: new Date() } },
+          { status: "PAYMENT_VERIFICATION_PENDING" },
+        ],
+      },
     },
   });
 
@@ -41,16 +52,24 @@ export async function getEventCapacityRemaining(eventId: string) {
   });
   const held = await prisma.attendee.count({
     where: {
-      booking: { eventId, status: "PENDING_PAYMENT", reservationExpiresAt: { gt: new Date() } },
+      booking: {
+        eventId,
+        OR: [
+          { status: "PENDING_PAYMENT", reservationExpiresAt: { gt: new Date() } },
+          { status: "PAYMENT_VERIFICATION_PENDING" },
+        ],
+      },
     },
   });
   return Math.max(0, event.capacity - confirmedTickets - held);
 }
 
+// Customer-facing label only — deliberately binary (no counts, percentages,
+// or "almost sold out" scarcity hints). Backend inventory tracking above is
+// unaffected and still enforces the real remaining count.
 export function categoryStatusLabel(status: string, remaining: number): string {
   if (status === "CLOSED") return "Sales closed";
   if (status === "PAUSED") return "Sales paused";
   if (remaining <= 0) return "Sold out";
-  if (remaining <= 10) return "Almost sold out";
   return "Available";
 }

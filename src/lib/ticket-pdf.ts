@@ -6,6 +6,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
 import { formatMoney } from "./money";
 import { formatEventDateTime } from "./format";
+import { paymentMethodLabel } from "./booking-status";
 
 const PAGE_W = 612;
 const PAGE_H = 300;
@@ -148,7 +149,7 @@ export async function generateReceiptPdf(bookingId: string): Promise<Uint8Array>
     y -= 16;
     page.drawText(`Payment date: ${payment.succeededAt?.toDateString() ?? ""}`, { x: 48, y, size: 11, font: regular });
     y -= 16;
-    page.drawText(`Method: ${payment.cardBrand ? `${payment.cardBrand} ending ${payment.cardLast4}` : "Free order"}`, { x: 48, y, size: 11, font: regular });
+    page.drawText(`Method: ${paymentMethodLabel(payment)}`, { x: 48, y, size: 11, font: regular });
   }
 
   y -= 34;

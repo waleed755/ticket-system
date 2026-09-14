@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     default: "Ticket Buddy — Find It. Book It. Be There.",
     template: "%s — Ticket Buddy",
   },
-  description: "Pakistan's platform for concerts, conferences & live events. Browse events, book tickets in minutes, and pay securely with JazzCash.",
+  description: "Pakistan's platform for concerts, conferences & live events. Browse events, book tickets in minutes, and pay easily with a simple, secure booking process.",
   openGraph: {
     title: "Ticket Buddy — Find It. Book It. Be There.",
     description: "Pakistan's platform for concerts, conferences & live events.",

@@ -230,7 +230,6 @@ export default async function EventDetailPage({
                 {displayStatusLabels[displayStatus]}
               </button>
             )}
-            <p className="text-xs text-gray-400 mt-3 text-center">Capacity: {event.capacity} · {detail.capacityRemaining} spots remaining</p>
           </Card>
         </div>
       </Container>

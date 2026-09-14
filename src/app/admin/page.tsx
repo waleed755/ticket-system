@@ -29,6 +29,7 @@ export default async function AdminDashboardPage() {
     revenueAgg,
     refundedAgg,
     pendingRefunds,
+    paymentsAwaitingVerification,
     recentBookings,
     recentCheckIns,
   ] = await Promise.all([
@@ -44,6 +45,7 @@ export default async function AdminDashboardPage() {
     prisma.payment.aggregate({ where: { status: "SUCCEEDED", booking: bookingEventFilter }, _sum: { amount: true } }),
     prisma.refund.aggregate({ where: { status: { in: ["COMPLETED", "PARTIALLY_APPROVED"] }, booking: bookingEventFilter }, _sum: { approvedAmount: true } }),
     prisma.refund.count({ where: { status: "PENDING", booking: bookingEventFilter } }),
+    prisma.payment.count({ where: { status: "AWAITING_VERIFICATION", booking: bookingEventFilter } }),
     prisma.booking.findMany({ where: bookingEventFilter, include: { event: true }, orderBy: { createdAt: "desc" }, take: 6 }),
     prisma.ticket.findMany({ where: { event: eventFilter, status: "CHECKED_IN" }, include: { attendee: true, event: true }, orderBy: { checkedInAt: "desc" }, take: 5 }),
   ]);
@@ -61,6 +63,7 @@ export default async function AdminDashboardPage() {
     { label: "Total revenue", value: formatMoney(revenueAgg._sum.amount ?? 0) },
     { label: "Total refunded", value: formatMoney(refundedAgg._sum.approvedAmount ?? 0) },
     { label: "Pending refund requests", value: pendingRefunds },
+    { label: "Payments to verify", value: paymentsAwaitingVerification, href: "/admin/payment-verifications" },
   ];
 
   return (
@@ -71,12 +74,21 @@ export default async function AdminDashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-        {stats.map((s) => (
-          <Card key={s.label} className="p-5">
-            <p className="text-sm text-gray-500">{s.label}</p>
-            <p className="text-2xl font-bold text-gray-900">{s.value}</p>
-          </Card>
-        ))}
+        {stats.map((s) =>
+          "href" in s && s.href ? (
+            <Link key={s.label} href={s.href}>
+              <Card className="p-5 hover:shadow-md transition-shadow">
+                <p className="text-sm text-gray-500">{s.label}</p>
+                <p className="text-2xl font-bold text-gray-900">{s.value}</p>
+              </Card>
+            </Link>
+          ) : (
+            <Card key={s.label} className="p-5">
+              <p className="text-sm text-gray-500">{s.label}</p>
+              <p className="text-2xl font-bold text-gray-900">{s.value}</p>
+            </Card>
+          )
+        )}
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">

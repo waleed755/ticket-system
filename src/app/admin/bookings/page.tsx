@@ -42,7 +42,7 @@ export default async function AdminBookingsPage({
     take: 100,
   });
 
-  const statuses = ["PENDING_PAYMENT", "CONFIRMED", "PARTIALLY_REFUNDED", "FULLY_REFUNDED", "CANCELLED", "EXPIRED", "COMPLETED"];
+  const statuses = ["PENDING_PAYMENT", "PAYMENT_VERIFICATION_PENDING", "CONFIRMED", "PARTIALLY_REFUNDED", "FULLY_REFUNDED", "CANCELLED", "EXPIRED", "COMPLETED"];
 
   return (
     <div>

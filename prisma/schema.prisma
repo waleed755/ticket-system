@@ -69,6 +69,7 @@ enum QuestionType {
 
 enum BookingStatus {
   PENDING_PAYMENT
+  PAYMENT_VERIFICATION_PENDING
   CONFIRMED
   PARTIALLY_REFUNDED
   FULLY_REFUNDED
@@ -89,6 +90,7 @@ enum TicketStatus {
 
 enum PaymentStatus {
   PENDING
+  AWAITING_VERIFICATION
   SUCCEEDED
   FAILED
   CANCELLED
@@ -144,6 +146,7 @@ enum EmailCategory {
   TICKET_CANCELLED
   ATTENDEE_UPDATED
   PAYMENT_FAILED
+  PAYMENT_VERIFICATION_PENDING
   WAITLIST_CONFIRMATION
   WAITLIST_AVAILABILITY
   CONTACT_RECEIVED
@@ -186,6 +189,7 @@ model User {
   refundRequests         Refund[]            @relation("RefundRequestedBy")
   createdEvents          Event[]             @relation("EventCreatedBy")
   createdAnnouncements   Announcement[]
+  reviewedPayments       Payment[]           @relation("PaymentReviewedBy")
 
   @@index([role])
 }
@@ -492,6 +496,10 @@ model Payment {
   failureReason String?
   providerResponse String?
 
+  proofImageUrl String?
+  reviewedAt    DateTime?
+  reviewedById  String?
+
   attemptedAt   DateTime      @default(now())
   succeededAt   DateTime?
 
@@ -500,6 +508,7 @@ model Payment {
 
   booking       Booking       @relation(fields: [bookingId], references: [id])
   refunds       Refund[]
+  reviewedBy    User?         @relation("PaymentReviewedBy", fields: [reviewedById], references: [id])
 
   @@index([bookingId])
   @@index([status])

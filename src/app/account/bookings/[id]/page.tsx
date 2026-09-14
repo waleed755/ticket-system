@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { Card, Badge, SectionHeading, Alert } from "@/components/ui";
 import { formatMoney } from "@/lib/money";
 import { formatEventDateTime } from "@/lib/format";
-import { bookingStatusColor, ticketStatusColor, refundStatusColor, formatStatusLabel } from "@/lib/booking-status";
+import { bookingStatusColor, ticketStatusColor, refundStatusColor, formatStatusLabel, paymentMethodLabel } from "@/lib/booking-status";
 import { getTicketEligibility } from "@/lib/refunds";
 import { formatDeadline } from "@/lib/refund-policy";
 import RefundRequestForm from "./refund-request-form";
@@ -113,7 +113,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
         </div>
         {booking.payments.map((p) => (
           <div key={p.id} className="flex justify-between text-xs text-gray-500 border-t border-gray-100 pt-2">
-            <span>{p.reference} · {p.cardBrand ? `${p.cardBrand} •••• ${p.cardLast4}` : "Free order"}</span>
+            <span>{p.reference} · {paymentMethodLabel(p)}</span>
             <Badge color={p.status === "SUCCEEDED" ? "green" : p.status === "FAILED" ? "red" : "amber"}>{formatStatusLabel(p.status)}</Badge>
           </div>
         ))}

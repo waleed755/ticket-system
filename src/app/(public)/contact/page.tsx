@@ -8,8 +8,6 @@ export default async function ContactPage() {
     prisma.siteSetting.findMany(),
   ]);
   const email = settings.find((s) => s.key === "support_email")?.value ?? "tickets@ticketbuddy.pk";
-  const phone = settings.find((s) => s.key === "support_phone")?.value ?? "";
-  const phoneAlt = settings.find((s) => s.key === "support_phone_alt")?.value ?? "";
   const address = settings.find((s) => s.key === "business_address")?.value ?? "";
 
   return (
@@ -24,10 +22,6 @@ export default async function ContactPage() {
           <Card className="p-6">
             <p className="font-semibold text-gray-900 mb-1">Email</p>
             <p className="text-sm text-brand">{email}</p>
-          </Card>
-          <Card className="p-6">
-            <p className="font-semibold text-gray-900 mb-1">Phone</p>
-            <p className="text-sm text-gray-600">{phone}{phoneAlt ? ` / ${phoneAlt}` : ""}</p>
           </Card>
           <Card className="p-6">
             <p className="font-semibold text-gray-900 mb-1">Business address</p>

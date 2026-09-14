@@ -30,6 +30,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     {
       label: "Finance",
       items: [
+        ...(perms.payments !== "none" ? [{ href: "/admin/payment-verifications", label: "Payment Verifications" }] : []),
         ...(perms.refunds !== "none" ? [{ href: "/admin/refunds", label: "Refund Requests" }] : []),
         ...(perms.discounts !== "none" ? [{ href: "/admin/discounts", label: "Discount Codes" }] : []),
       ],

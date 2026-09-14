@@ -3,7 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { Card, Badge, SectionHeading } from "@/components/ui";
 import { formatMoney } from "@/lib/money";
 import { formatEventDateTime } from "@/lib/format";
-import { bookingStatusColor, ticketStatusColor, refundStatusColor, formatStatusLabel } from "@/lib/booking-status";
+import { bookingStatusColor, ticketStatusColor, refundStatusColor, formatStatusLabel, paymentMethodLabel } from "@/lib/booking-status";
+import Link from "next/link";
 import { NoteForm, ResendButton, CancelBookingForm, InvalidateTicketButton } from "./booking-admin-actions";
 
 export const dynamic = "force-dynamic";
@@ -79,8 +80,18 @@ export default async function AdminBookingDetailPage({ params }: { params: Promi
               <div className="flex justify-between font-bold border-t border-gray-100 pt-2"><span>Total</span><span>{formatMoney(booking.totalAmount, booking.currency)}</span></div>
             </div>
             {booking.payments.map((p) => (
-              <div key={p.id} className="flex justify-between text-xs text-gray-500 border-t border-gray-100 pt-2">
-                <span>{p.reference} · {p.cardBrand ? `${p.cardBrand} •••• ${p.cardLast4}` : p.method}{p.failureReason ? ` — ${p.failureReason}` : ""}</span>
+              <div key={p.id} className="flex justify-between items-center text-xs text-gray-500 border-t border-gray-100 pt-2">
+                <span>
+                  {p.reference} · {paymentMethodLabel(p)}{p.failureReason ? ` — ${p.failureReason}` : ""}
+                  {p.method === "manual_transfer" && (
+                    <>
+                      {" "}·{" "}
+                      <Link href={`/admin/payment-verifications/${p.id}`} className="text-brand font-semibold">
+                        View proof
+                      </Link>
+                    </>
+                  )}
+                </span>
                 <Badge color={p.status === "SUCCEEDED" ? "green" : p.status === "FAILED" ? "red" : "amber"}>{formatStatusLabel(p.status)}</Badge>
               </div>
             ))}

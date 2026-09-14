@@ -2,7 +2,7 @@ import { prisma } from "./prisma";
 import { generateBookingNumber, generateTicketNumber, generateSecureTicketCode, generatePaymentReference, generateToken } from "./ids";
 import { RESERVATION_HOLD_MINUTES, releaseExpiredHolds } from "./inventory";
 import { validateDiscountCode } from "./discounts";
-import { simulateCharge, simulateRefund } from "./payments";
+import { simulateRefund } from "./payments";
 import { sendEmail, emailTemplates } from "./email";
 import { logActivity } from "./activity";
 import { formatMoney } from "./money";
@@ -86,7 +86,15 @@ export async function createBooking(params: {
       if (qty > category.maxPerOrder) throw new BookingError(`Maximum ${category.maxPerOrder} ticket(s) allowed per order for "${category.name}".`);
 
       const held = await tx.attendee.count({
-        where: { ticketCategoryId: categoryId, booking: { status: "PENDING_PAYMENT", reservationExpiresAt: { gt: now } } },
+        where: {
+          ticketCategoryId: categoryId,
+          booking: {
+            OR: [
+              { status: "PENDING_PAYMENT", reservationExpiresAt: { gt: now } },
+              { status: "PAYMENT_VERIFICATION_PENDING" },
+            ],
+          },
+        },
       });
       const remaining = category.totalQuantity - category.quantitySold - held;
       if (qty > remaining) {
@@ -102,7 +110,15 @@ export async function createBooking(params: {
     // Event-level capacity check.
     const confirmedTickets = await tx.ticket.count({ where: { eventId, status: { in: ["VALID", "CHECKED_IN"] } } });
     const heldTotal = await tx.attendee.count({
-      where: { booking: { eventId, status: "PENDING_PAYMENT", reservationExpiresAt: { gt: now } } },
+      where: {
+        booking: {
+          eventId,
+          OR: [
+            { status: "PENDING_PAYMENT", reservationExpiresAt: { gt: now } },
+            { status: "PAYMENT_VERIFICATION_PENDING" },
+          ],
+        },
+      },
     });
     if (confirmedTickets + heldTotal + attendees.length > event.capacity) {
       throw new BookingError("This event has reached full capacity.");
@@ -181,9 +197,8 @@ async function loadBookingForPayment(bookingId: string) {
 
 // Shared success path: generates tickets, updates inventory, creates/links the
 // customer account, and sends every confirmation email. Called by both the
-// simulated test-card flow and any real payment provider's callback (e.g.
-// JazzCash), so ticket issuance behaves identically no matter how the
-// customer paid.
+// free-booking path and admin manual-payment approval, so ticket issuance
+// behaves identically no matter how the booking was confirmed.
 export async function finalizeConfirmedPayment(booking: NonNullable<BookingWithRelations>, payment: { reference: string }) {
   const isFree = booking.totalAmount === 0;
 
@@ -259,7 +274,7 @@ export async function finalizeConfirmedPayment(booking: NonNullable<BookingWithR
   await sendEmail({
     toEmail: booking.buyerEmail,
     toUserId: user.id,
-    subject: `Your booking is confirmed — ${booking.event.name}`,
+    subject: "Your Ticket Buddy Booking is Confirmed",
     bodyHtml: emailTemplates.bookingConfirmation({
       buyerName: booking.buyerName,
       eventName: booking.event.name,
@@ -342,11 +357,11 @@ export async function sendPaymentFailedNotice(booking: NonNullable<BookingWithRe
   });
 }
 
-export async function confirmBookingPayment(params: {
-  bookingId: string;
-  card?: { cardNumber: string; expiry: string; cvc: string };
-}): Promise<PaymentAttemptResult> {
-  const booking = await loadBookingForPayment(params.bookingId);
+// Free (zero-amount) bookings skip the manual payment-proof step entirely —
+// there's nothing to verify, so they're confirmed the moment the customer
+// reaches the payment step.
+export async function confirmFreeBooking(bookingId: string): Promise<PaymentAttemptResult> {
+  const booking = await loadBookingForPayment(bookingId);
   if (!booking) return { success: false, reason: "Booking not found." };
 
   if (booking.status === "CONFIRMED" || booking.status === "COMPLETED") {
@@ -355,50 +370,168 @@ export async function confirmBookingPayment(params: {
   if (booking.status !== "PENDING_PAYMENT") {
     return { success: false, reason: "This booking is no longer available for payment." };
   }
+  if (booking.totalAmount !== 0) {
+    return { success: false, reason: "This booking requires payment." };
+  }
   if (booking.reservationExpiresAt && booking.reservationExpiresAt < new Date()) {
     await prisma.booking.update({ where: { id: booking.id }, data: { status: "EXPIRED" } });
     return { success: false, reason: "Your reserved tickets expired. Please start a new booking." };
   }
 
-  const isFree = booking.totalAmount === 0;
-  let chargeSuccess = true;
-  let reference = generatePaymentReference();
-  let cardLast4 = "";
-  let cardBrand = "";
-  let failureReason: string | undefined;
-
-  if (!isFree) {
-    if (!params.card) return { success: false, reason: "Payment details are required." };
-    const result = simulateCharge(params.card);
-    chargeSuccess = result.success;
-    reference = result.reference;
-    cardLast4 = result.cardLast4;
-    cardBrand = result.cardBrand;
-    failureReason = result.failureReason;
-  }
-
   const payment = await prisma.payment.create({
     data: {
       bookingId: booking.id,
-      amount: booking.totalAmount,
+      amount: 0,
       currency: booking.currency,
-      status: chargeSuccess ? "SUCCEEDED" : "FAILED",
-      method: isFree ? "free" : "test_card",
-      reference,
-      cardLast4: cardLast4 || null,
-      cardBrand: cardBrand || null,
-      failureReason: failureReason,
-      succeededAt: chargeSuccess ? new Date() : null,
+      status: "SUCCEEDED",
+      method: "free",
+      reference: generatePaymentReference(),
+      succeededAt: new Date(),
     },
   });
 
-  if (!chargeSuccess) {
-    await sendPaymentFailedNotice(booking, failureReason || "Payment could not be processed.");
-    return { success: false, reason: failureReason || "Payment failed." };
-  }
-
   await finalizeConfirmedPayment(booking, payment);
   return { success: true, bookingId: booking.id };
+}
+
+export type SubmitPaymentProofResult = { ok: true } | { ok: false; reason: string };
+
+// Customer-facing step: records the uploaded payment screenshot and moves the
+// booking to PAYMENT_VERIFICATION_PENDING. This does NOT generate tickets or
+// send the final confirmation email — only an admin approval does that (see
+// approvePaymentProof below), so a customer can never receive a confirmed
+// ticket before their payment has actually been checked.
+export async function submitPaymentProof(params: { bookingId: string; proofImageUrl: string }): Promise<SubmitPaymentProofResult> {
+  const booking = await loadBookingForPayment(params.bookingId);
+  if (!booking) return { ok: false, reason: "Booking not found." };
+
+  if (booking.status === "CONFIRMED" || booking.status === "COMPLETED") {
+    return { ok: false, reason: "This booking is already confirmed." };
+  }
+  if (booking.status !== "PENDING_PAYMENT") {
+    return { ok: false, reason: "This booking is no longer available for payment." };
+  }
+  if (booking.totalAmount <= 0) {
+    return { ok: false, reason: "This booking doesn't require payment." };
+  }
+  if (booking.reservationExpiresAt && booking.reservationExpiresAt < new Date()) {
+    await prisma.booking.update({ where: { id: booking.id }, data: { status: "EXPIRED" } });
+    return { ok: false, reason: "Your reserved tickets expired. Please start a new booking." };
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.payment.create({
+      data: {
+        bookingId: booking.id,
+        amount: booking.totalAmount,
+        currency: booking.currency,
+        status: "AWAITING_VERIFICATION",
+        method: "manual_transfer",
+        reference: generatePaymentReference(),
+        proofImageUrl: params.proofImageUrl,
+      },
+    });
+    await tx.booking.update({
+      where: { id: booking.id },
+      data: { status: "PAYMENT_VERIFICATION_PENDING", reservationExpiresAt: null },
+    });
+  });
+
+  await sendEmail({
+    toEmail: booking.buyerEmail,
+    subject: "Payment Received – Verification Pending",
+    bodyHtml: emailTemplates.paymentVerificationPending({
+      buyerName: booking.buyerName,
+      bookingNumber: booking.bookingNumber,
+    }),
+    previewText: "We're verifying your payment",
+    category: "PAYMENT_VERIFICATION_PENDING",
+    relatedBookingId: booking.id,
+    relatedEventId: booking.eventId,
+  });
+
+  await logActivity({
+    actorId: null,
+    actorName: "Customer",
+    action: "payment.proof_submitted",
+    entityType: "BOOKING",
+    entityId: booking.id,
+    description: `Payment proof uploaded for booking ${booking.bookingNumber}; awaiting admin verification.`,
+  });
+
+  return { ok: true };
+}
+
+// Admin decision path — approve: verifies the manual payment, then runs the
+// exact same ticket-issuance/confirmation-email logic as every other payment
+// method (finalizeConfirmedPayment), so a manually-verified booking behaves
+// identically to any other confirmed booking from here on.
+export async function approvePaymentProof(paymentId: string, reviewer: { userId: string; fullName: string }) {
+  const payment = await prisma.payment.findUnique({ where: { id: paymentId } });
+  if (!payment) return { ok: false as const, message: "Payment not found." };
+  if (payment.status !== "AWAITING_VERIFICATION") {
+    return { ok: false as const, message: "This payment is not awaiting verification." };
+  }
+
+  const booking = await loadBookingForPayment(payment.bookingId);
+  if (!booking) return { ok: false as const, message: "Booking not found." };
+
+  const updatedPayment = await prisma.payment.update({
+    where: { id: paymentId },
+    data: { status: "SUCCEEDED", succeededAt: new Date(), reviewedAt: new Date(), reviewedById: reviewer.userId },
+  });
+
+  await finalizeConfirmedPayment(booking, updatedPayment);
+
+  await logActivity({
+    actorId: reviewer.userId,
+    actorName: reviewer.fullName,
+    action: "payment.approved",
+    entityType: "BOOKING",
+    entityId: booking.id,
+    description: `Payment for booking ${booking.bookingNumber} approved and booking confirmed.`,
+  });
+
+  return { ok: true as const };
+}
+
+// Admin decision path — reject: sends the booking back to PENDING_PAYMENT
+// with a fresh reservation hold so the customer can upload a corrected
+// screenshot, rather than losing their held tickets outright.
+export async function rejectPaymentProof(paymentId: string, reviewer: { userId: string; fullName: string }, reason: string) {
+  const payment = await prisma.payment.findUnique({ where: { id: paymentId } });
+  if (!payment) return { ok: false as const, message: "Payment not found." };
+  if (payment.status !== "AWAITING_VERIFICATION") {
+    return { ok: false as const, message: "This payment is not awaiting verification." };
+  }
+
+  const booking = await loadBookingForPayment(payment.bookingId);
+  if (!booking) return { ok: false as const, message: "Booking not found." };
+
+  await prisma.payment.update({
+    where: { id: paymentId },
+    data: { status: "FAILED", failureReason: reason, reviewedAt: new Date(), reviewedById: reviewer.userId },
+  });
+  await prisma.booking.update({
+    where: { id: booking.id },
+    data: {
+      status: "PENDING_PAYMENT",
+      reservationExpiresAt: new Date(Date.now() + RESERVATION_HOLD_MINUTES * 60 * 1000),
+    },
+  });
+
+  await sendPaymentFailedNotice(booking, reason);
+
+  await logActivity({
+    actorId: reviewer.userId,
+    actorName: reviewer.fullName,
+    action: "payment.rejected",
+    entityType: "BOOKING",
+    entityId: booking.id,
+    description: `Payment for booking ${booking.bookingNumber} rejected: ${reason}`,
+  });
+
+  return { ok: true as const };
 }
 
 export async function refundSimulatedPayment(paymentReference: string, amount: number) {

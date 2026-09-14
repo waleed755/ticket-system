@@ -124,6 +124,15 @@ export const emailTemplates = {
     </table>
     ${button("Download receipt", opts.receiptUrl)}
   `,
+  paymentVerificationPending: (opts: { buyerName: string; bookingNumber: string }) => `
+    <p>Hi ${opts.buyerName},</p>
+    <p>We have received your payment proof for your Ticket Buddy booking.</p>
+    <p>Our team is currently verifying your payment. You will receive another email once your payment has been approved.</p>
+    <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;">
+      <tr><td style="padding:6px 0;color:#6b7280;">Booking reference</td><td style="padding:6px 0;text-align:right;font-weight:600;">${opts.bookingNumber}</td></tr>
+      <tr><td style="padding:6px 0;color:#6b7280;">Status</td><td style="padding:6px 0;text-align:right;">Payment Verification Pending</td></tr>
+    </table>
+  `,
   paymentFailed: (opts: { buyerName: string; eventName: string; retryUrl: string; reason: string }) => `
     <p>Hi ${opts.buyerName},</p>
     <p>We couldn't process your payment for <strong>${opts.eventName}</strong>.</p>
