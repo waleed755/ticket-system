@@ -64,13 +64,6 @@ export default async function BookEventPage({
         currency: categories[0]?.currency ?? "PKR",
       }}
       categories={categories}
-      questions={event.questions.map((q) => ({
-        id: q.id,
-        label: q.label,
-        type: q.type,
-        options: q.options ? (JSON.parse(q.options) as string[]) : [],
-        required: q.required,
-      }))}
     />
   );
 }

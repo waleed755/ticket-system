@@ -29,14 +29,6 @@ export class BookingError extends Error {
   }
 }
 
-const SERVICE_FEE_PERCENT = 3; // percent
-const SERVICE_FEE_FLAT = 10000; // paisa (PKR 100.00)
-
-function computeServiceFee(subtotal: number): number {
-  if (subtotal <= 0) return 0;
-  return Math.round((subtotal * SERVICE_FEE_PERCENT) / 100) + SERVICE_FEE_FLAT;
-}
-
 export async function createBooking(params: {
   eventId: string;
   buyerName: string;
@@ -139,7 +131,10 @@ export async function createBooking(params: {
       discountId = result.discountId;
     }
 
-    const feeAmount = computeServiceFee(subtotal - discountAmount);
+    // No service fee is charged — the customer pays exactly subtotal minus
+    // any discount. feeAmount stays on the model for historical bookings
+    // that were charged one before this changed.
+    const feeAmount = 0;
     const totalAmount = Math.max(0, subtotal - discountAmount + feeAmount);
 
     const booking = await tx.booking.create({

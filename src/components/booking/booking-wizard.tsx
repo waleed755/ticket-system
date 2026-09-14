@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Container, Card, Button, Input, Label, Select, Alert, Badge } from "@/components/ui";
+import { Container, Card, Button, Input, Label, Alert, Badge } from "@/components/ui";
 import { formatMoney } from "@/lib/money";
 import { createBookingAction, checkDiscountCodeAction } from "@/app/actions/booking";
 import CheckoutSteps from "./checkout-steps";
@@ -20,13 +20,6 @@ interface Category {
   remaining: number;
   benefits: string | null;
 }
-interface Question {
-  id: string;
-  label: string;
-  type: string;
-  options: string[];
-  required: boolean;
-}
 interface EventInfo {
   id: string;
   slug: string;
@@ -38,28 +31,13 @@ interface EventInfo {
   currency: string;
 }
 
-interface AttendeeForm {
-  ticketCategoryId: string;
-  fullName: string;
-  email: string;
-  phone: string;
-  dateOfBirth: string;
-  gender: string;
-  idNumber: string;
-  emergencyContact: string;
-  accessibilityNeeds: string;
-  dietaryNeeds: string;
-  customAnswers: Record<string, string>;
-}
-
-export default function BookingWizard({ event, categories, questions }: { event: EventInfo; categories: Category[]; questions: Question[] }) {
+export default function BookingWizard({ event, categories }: { event: EventInfo; categories: Category[] }) {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [buyerName, setBuyerName] = useState("");
   const [buyerEmail, setBuyerEmail] = useState("");
   const [buyerPhone, setBuyerPhone] = useState("");
-  const [attendees, setAttendees] = useState<AttendeeForm[]>([]);
   const [discountCode, setDiscountCode] = useState("");
   const [discountResult, setDiscountResult] = useState<{ valid: boolean; reason?: string; discountAmount?: number } | null>(null);
   const [discountChecking, setDiscountChecking] = useState(false);
@@ -74,47 +52,10 @@ export default function BookingWizard({ event, categories, questions }: { event:
   const totalTickets = selectedItems.reduce((s, i) => s + i.qty, 0);
   const subtotal = selectedItems.reduce((s, i) => s + i.category.price * i.qty, 0);
   const discountAmount = discountResult?.valid ? discountResult.discountAmount ?? 0 : 0;
-  const feeAmount = subtotal - discountAmount > 0 ? Math.round((subtotal - discountAmount) * 0.03) + 10000 : 0;
-  const total = Math.max(0, subtotal - discountAmount + feeAmount);
+  const total = Math.max(0, subtotal - discountAmount);
 
   function setQty(categoryId: string, qty: number) {
     setQuantities((q) => ({ ...q, [categoryId]: Math.max(0, qty) }));
-  }
-
-  function goToDetailsStep() {
-    // (Re)build attendee forms to match selected quantities, preserving any already-entered data.
-    const next: AttendeeForm[] = [];
-    for (const { category, qty } of selectedItems) {
-      for (let i = 0; i < qty; i++) {
-        const existing = attendees.find((a, idx) => a.ticketCategoryId === category.id && next.filter((n) => n.ticketCategoryId === category.id).length === idx);
-        next.push(
-          existing ?? {
-            ticketCategoryId: category.id,
-            fullName: "",
-            email: "",
-            phone: "",
-            dateOfBirth: "",
-            gender: "",
-            idNumber: "",
-            emergencyContact: "",
-            accessibilityNeeds: "",
-            dietaryNeeds: "",
-            customAnswers: {},
-          }
-        );
-      }
-    }
-    setAttendees(next);
-    setStep(1);
-  }
-
-  function updateAttendee(index: number, patch: Partial<AttendeeForm>) {
-    setAttendees((prev) => prev.map((a, i) => (i === index ? { ...a, ...patch } : a)));
-  }
-
-  function copyBuyerToFirst() {
-    if (attendees.length === 0) return;
-    updateAttendee(0, { fullName: buyerName, email: buyerEmail, phone: buyerPhone });
   }
 
   async function applyDiscount() {
@@ -134,24 +75,22 @@ export default function BookingWizard({ event, categories, questions }: { event:
   async function reviewOrder() {
     setSubmitting(true);
     setError(null);
+    // Tickets are issued to the buyer — each still gets its own unique ticket
+    // number/QR code, but no separate per-attendee details are collected.
+    const attendees = selectedItems.flatMap(({ category, qty }) =>
+      Array.from({ length: qty }, () => ({
+        ticketCategoryId: category.id,
+        fullName: buyerName,
+        email: buyerEmail,
+        phone: buyerPhone,
+      }))
+    );
     const result = await createBookingAction({
       eventId: event.id,
       buyerName,
       buyerEmail,
       buyerPhone,
-      attendees: attendees.map((a) => ({
-        ticketCategoryId: a.ticketCategoryId,
-        fullName: a.fullName,
-        email: a.email || undefined,
-        phone: a.phone || undefined,
-        dateOfBirth: a.dateOfBirth || undefined,
-        gender: a.gender || undefined,
-        idNumber: a.idNumber || undefined,
-        emergencyContact: a.emergencyContact || undefined,
-        accessibilityNeeds: a.accessibilityNeeds || undefined,
-        dietaryNeeds: a.dietaryNeeds || undefined,
-        customAnswers: a.customAnswers,
-      })),
+      attendees,
       discountCode: discountResult?.valid ? discountCode : undefined,
       termsAccepted,
     });
@@ -163,7 +102,7 @@ export default function BookingWizard({ event, categories, questions }: { event:
     router.push(`/checkout/${result.bookingId}/pay`);
   }
 
-  const detailsComplete = !!buyerName && !!buyerEmail && !!buyerPhone && attendees.every((a) => a.fullName) && termsAccepted;
+  const detailsComplete = !!buyerName && !!buyerEmail && !!buyerPhone && termsAccepted;
 
   return (
     <Container className="py-10">
@@ -232,7 +171,7 @@ export default function BookingWizard({ event, categories, questions }: { event:
                   })}
                 </div>
                 <div className="mt-6 flex justify-end">
-                  <Button disabled={totalTickets === 0} onClick={goToDetailsStep}>
+                  <Button disabled={totalTickets === 0} onClick={() => setStep(1)}>
                     Continue ({totalTickets} ticket{totalTickets === 1 ? "" : "s"})
                   </Button>
                 </div>
@@ -242,7 +181,10 @@ export default function BookingWizard({ event, categories, questions }: { event:
             {step === 1 && (
               <div>
                 <h2 className="font-bold text-gray-900 mb-1">Customer & booking details</h2>
-                <p className="text-sm text-gray-500 mb-4">We&apos;ll send your booking confirmation and tickets to this email address.</p>
+                <p className="text-sm text-gray-500 mb-4">
+                  We&apos;ll send your booking confirmation and tickets to this email address. Tickets are issued to
+                  you and each carries its own unique code.
+                </p>
                 <div className="space-y-4 mb-8">
                   <div>
                     <Label htmlFor="buyerName">Full name</Label>
@@ -258,88 +200,14 @@ export default function BookingWizard({ event, categories, questions }: { event:
                   </div>
                 </div>
 
-                <h3 className="font-bold text-gray-900 mb-1">Attendee details</h3>
-                <p className="text-sm text-gray-500 mb-4">Enter details for each of the {attendees.length} attendee(s) on this booking.</p>
-                <div className="space-y-6 mb-8">
-                  {attendees.map((a, idx) => {
-                    const category = categories.find((c) => c.id === a.ticketCategoryId)!;
-                    return (
-                      <div key={idx} className="border border-gray-200 rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <p className="font-semibold text-gray-900">Attendee {idx + 1} — {category.name}</p>
-                          {idx === 0 && (
-                            <button type="button" onClick={copyBuyerToFirst} className="text-xs text-brand font-semibold">
-                              Copy my info
-                            </button>
-                          )}
-                        </div>
-                        <div className="grid sm:grid-cols-2 gap-3">
-                          <div>
-                            <Label>Full name</Label>
-                            <Input value={a.fullName} onChange={(e) => updateAttendee(idx, { fullName: e.target.value })} required />
-                          </div>
-                          <div>
-                            <Label>Email</Label>
-                            <Input type="email" value={a.email} onChange={(e) => updateAttendee(idx, { email: e.target.value })} />
-                          </div>
-                          <div>
-                            <Label>Phone</Label>
-                            <Input value={a.phone} onChange={(e) => updateAttendee(idx, { phone: e.target.value })} />
-                          </div>
-                          <div>
-                            <Label>Date of birth</Label>
-                            <Input type="date" value={a.dateOfBirth} onChange={(e) => updateAttendee(idx, { dateOfBirth: e.target.value })} />
-                          </div>
-                          <div>
-                            <Label>Emergency contact</Label>
-                            <Input value={a.emergencyContact} onChange={(e) => updateAttendee(idx, { emergencyContact: e.target.value })} />
-                          </div>
-                          <div>
-                            <Label>Dietary requirements</Label>
-                            <Input value={a.dietaryNeeds} onChange={(e) => updateAttendee(idx, { dietaryNeeds: e.target.value })} />
-                          </div>
-                          <div>
-                            <Label>Accessibility requirements</Label>
-                            <Input value={a.accessibilityNeeds} onChange={(e) => updateAttendee(idx, { accessibilityNeeds: e.target.value })} />
-                          </div>
-                          {questions.map((q) => (
-                            <div key={q.id}>
-                              <Label>{q.label}{q.required && " *"}</Label>
-                              {q.type === "SELECT" ? (
-                                <Select
-                                  value={a.customAnswers[q.id] ?? ""}
-                                  required={q.required}
-                                  onChange={(e) => updateAttendee(idx, { customAnswers: { ...a.customAnswers, [q.id]: e.target.value } })}
-                                >
-                                  <option value="">Select...</option>
-                                  {q.options.map((o) => <option key={o} value={o}>{o}</option>)}
-                                </Select>
-                              ) : (
-                                <Input
-                                  required={q.required}
-                                  value={a.customAnswers[q.id] ?? ""}
-                                  onChange={(e) => updateAttendee(idx, { customAnswers: { ...a.customAnswers, [q.id]: e.target.value } })}
-                                />
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
                 <h3 className="font-bold text-gray-900 mb-3">Order summary</h3>
                 <div className="space-y-2 mb-5">
-                  {attendees.map((a, idx) => {
-                    const category = categories.find((c) => c.id === a.ticketCategoryId)!;
-                    return (
-                      <div key={idx} className="flex justify-between text-sm border-b border-gray-100 pb-2">
-                        <span>{a.fullName || "—"} <span className="text-gray-400">({category.name})</span></span>
-                        <span className="font-medium">{formatMoney(category.price, category.currency)}</span>
-                      </div>
-                    );
-                  })}
+                  {selectedItems.map(({ category, qty }) => (
+                    <div key={category.id} className="flex justify-between text-sm border-b border-gray-100 pb-2">
+                      <span>{qty} × {category.name}</span>
+                      <span className="font-medium">{formatMoney(category.price * qty, category.currency)}</span>
+                    </div>
+                  ))}
                 </div>
 
                 <div className="flex gap-2 mb-5">
@@ -361,7 +229,6 @@ export default function BookingWizard({ event, categories, questions }: { event:
                 <div className="border-t border-gray-200 pt-4 space-y-1 text-sm mb-5">
                   <div className="flex justify-between"><span className="text-gray-500">Subtotal</span><span>{formatMoney(subtotal)}</span></div>
                   {discountAmount > 0 && <div className="flex justify-between text-green-700"><span>Discount</span><span>−{formatMoney(discountAmount)}</span></div>}
-                  {feeAmount > 0 && <div className="flex justify-between"><span className="text-gray-500">Service fee</span><span>{formatMoney(feeAmount)}</span></div>}
                   <div className="flex justify-between font-bold text-base pt-2 border-t border-gray-200"><span>Total</span><span>{total === 0 ? "Free" : formatMoney(total)}</span></div>
                 </div>
 
